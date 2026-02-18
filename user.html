@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FastStream | Watch & Explore</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <style>
+        :root { --primary-bg: #141414; --secondary-bg: #1f1f1f; --accent: #e50914; --text-main: #e5e5e5; --text-dim: #999999; --card-bg: #2a2a2a; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--primary-bg); color: var(--text-main); font-family: 'Segoe UI', sans-serif; padding-bottom: 80px; }
+        header { position: sticky; top: 0; z-index: 1000; background: #000; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .logo { font-size: 1.5rem; font-weight: bold; color: var(--accent); letter-spacing: 1px; }
+        .search-container { position: relative; flex: 1; max-width: 300px; margin-left: 15px; }
+        .search-container input { width: 100%; padding: 8px 35px 8px 15px; border-radius: 5px; border: none; background: #333; color: white; outline: none; }
+        .search-container i { position: absolute; right: 10px; top: 10px; color: var(--text-dim); }
+        .genre-container { display: flex; overflow-x: auto; padding: 15px 20px; gap: 10px; scrollbar-width: none; }
+        .chip { padding: 6px 15px; background: var(--secondary-bg); border-radius: 4px; white-space: nowrap; cursor: pointer; font-size: 0.85rem; border: 1px solid #333; }
+        .chip.active { background: var(--accent); border-color: var(--accent); }
+        .movies-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 0 20px; }
+        @media (min-width: 768px) { .movies-grid { grid-template-columns: repeat(4, 1fr); } }
+        .movie-card { background: var(--card-bg); border-radius: 8px; overflow: hidden; position: relative; transition: 0.3s; cursor: pointer; }
+        .poster-box { aspect-ratio: 2/3; position: relative; }
+        .poster-box img { width: 100%; height: 100%; object-fit: cover; }
+        .card-meta { padding: 8px; }
+        .card-meta h3 { font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .trailer-badge { position: absolute; top: 5px; right: 5px; background: #ffc107; color: black; font-size: 0.6rem; font-weight: bold; padding: 2px 5px; border-radius: 3px; }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; display: none; overflow-y: auto; }
+        .modal-content { max-width: 500px; margin: 40px auto; padding: 20px; position: relative; }
+        .close-modal { position: absolute; top: 0; right: 20px; font-size: 2rem; cursor: pointer; }
+        .btn { padding: 12px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; color: white; }
+        .btn-play { background: #0071eb; }
+        .btn-download { background: #28a745; }
+        .btn-fav { background: #333; }
+        .btn-fav.active { color: var(--accent); }
+        .btn-report { background: none; border: 1px solid #444; color: #888; font-size: 0.8rem; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 65px; background: #111; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #222; z-index: 1001; }
+        .nav-item { color: var(--text-dim); text-align: center; font-size: 0.7rem; cursor: pointer; }
+        .nav-item.active { color: var(--accent); }
+        .nav-item i { font-size: 1.2rem; display: block; margin-bottom: 3px; }
+        footer { padding: 40px 20px; text-align: center; opacity: 0.6; font-size: 0.75rem; border-top: 1px solid #222; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <header><div class="logo">FASTSTREAM</div><div class="search-container"><input type="text" id="search-input" placeholder="Search..." oninput="searchMovies()"><i class="fas fa-search"></i></div></header>
+    <div class="genre-container" id="genre-box"></div>
+    <div class="movies-grid" id="main-grid"></div>
+    <div id="detail-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <img id="m-poster" src="" style="width: 100%; border-radius: 8px; margin-bottom: 15px;">
+            <h2 id="m-title"></h2>
+            <p id="m-desc" style="font-size: 0.9rem; color: #999; margin: 15px 0; line-height: 1.4;"></p>
+            <button class="btn btn-play" id="play-btn"><i class="fas fa-play"></i> Watch Now</button>
+            <button class="btn btn-download" id="dl-btn"><i class="fas fa-download"></i> Download</button>
+            <button class="btn btn-fav" id="fav-btn" onclick="toggleFavorite()"><i class="fas fa-heart"></i> Add to Library</button>
+            <button class="btn btn-report" id="report-btn" onclick="reportMovie()"><i class="fas fa-bug"></i> Report Broken Link</button>
+        </div>
+    </div>
+    <footer><button onclick="requestMovie()" style="background:var(--accent); color:white; border:none; padding:8px 20px; border-radius:20px; margin-bottom:15px;">Request Movie</button><p>DMCA: FastStream does not host files. We provide links only.</p></footer>
+    <nav class="bottom-nav"><div class="nav-item active" id="nav-home" onclick="showHome()"><i class="fas fa-home"></i>Home</div><div class="nav-item" onclick="document.getElementById('search-input').focus()"><i class="fas fa-search"></i>Search</div><div class="nav-item" id="nav-lib" onclick="showLibrary()"><i class="fas fa-bookmark"></i>Library</div><div class="nav-item" onclick="requestMovie()"><i class="fas fa-plus"></i>Request</div></nav>
+
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", authDomain: "movie-project-b78b4.firebaseapp.com", databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com", projectId: "movie-project-b78b4", storageBucket: "movie-project-b78b4.firebasestorage.app", messagingSenderId: "819696212001", appId: "1:819696212001:web:379b19305c6d604b2deb60" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        let allMovies = [], currentMovie = null;
+
+        db.ref('movies').on('value', snap => { 
+            const data = snap.val(); 
+            allMovies = data ? Object.keys(data).map(id => ({id, ...data[id]})) : []; 
+            showHome(); 
+            renderGenres(); 
+        });
+
+        function renderMovies(list) { 
+            document.getElementById('main-grid').innerHTML = list.map(m => `<div class="movie-card" onclick='openModal(${JSON.stringify(m).replace(/'/g, "&apos;")})'>${m.trailerOnly ? '<div class="trailer-badge">TRAILER</div>' : ''}<div class="poster-box"><img src="${m.poster}"></div><div class="card-meta"><h3>${m.title}</h3></div></div>`).join('') || '<p style="padding:20px;">No movies found.</p>'; 
+        }
+
+        function renderGenres() { 
+            const genres = ['All', 'Action', 'Comedy', 'Drama', 'Horror', 'Sci-Fi', 'Romance', 'Thriller', 'Animation']; 
+            document.getElementById('genre-box').innerHTML = genres.map(g => `<div class="chip ${g==='All'?'active':''}" onclick="filterGenre('${g}', this)">${g}</div>`).join(''); 
+        }
+
+        function filterGenre(g, el) { 
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active')); 
+            el.classList.add('active'); 
+            renderMovies(g === 'All' ? allMovies : allMovies.filter(m => m.genre === g)); 
+        }
+
+        function searchMovies() { 
+            const q = document.getElementById('search-input').value.toLowerCase(); 
+            renderMovies(allMovies.filter(m => m.title.toLowerCase().includes(q))); 
+        }
+
+        function openModal(m) {
+            currentMovie = m;
+            document.getElementById('m-title').innerText = m.title;
+            document.getElementById('m-desc').innerText = m.description;
+            document.getElementById('m-poster').src = m.poster;
+            const dlBtn = document.getElementById('dl-btn'), playBtn = document.getElementById('play-btn');
+            
+            if(m.trailerOnly) { 
+                dlBtn.style.display = 'none'; 
+                playBtn.innerHTML = '<i class="fas fa-play"></i> Watch Trailer'; 
+            } else { 
+                dlBtn.style.display = 'flex'; 
+                playBtn.innerHTML = '<i class="fas fa-play"></i> Watch Movie'; 
+            }
+
+            playBtn.onclick = () => { if(m.playUrl) window.open(`go.html?url=${encodeURIComponent(m.playUrl)}`, '_blank'); else alert("Link not available"); };
+            dlBtn.onclick = () => { if(m.downloadUrl) window.open(`go.html?url=${encodeURIComponent(m.downloadUrl)}`, '_blank'); else alert("Link not available"); };
+            
+            const favs = JSON.parse(localStorage.getItem('myLibrary') || '[]');
+            document.getElementById('fav-btn').className = favs.some(f => f.id === m.id) ? 'btn btn-fav active' : 'btn btn-fav';
+            document.getElementById('detail-modal').style.display = 'block'; 
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() { document.getElementById('detail-modal').style.display = 'none'; document.body.style.overflow = 'auto'; }
+
+        // Request Movie (Fix)
+        function requestMovie() { 
+            const name = prompt("Enter Movie/Series Name:"); 
+            if(name) { 
+                db.ref('requests').push({ name: name, timestamp: Date.now() })
+                .then(() => alert("Request sent successfully!"))
+                .catch(e => alert("Error: " + e.message));
+            } 
+        }
+
+        // Report Movie (Fix)
+        function reportMovie() {
+            if(currentMovie) {
+                if(confirm("Report this link as broken?")) {
+                    db.ref('reports').push({ movieTitle: currentMovie.title, timestamp: Date.now() })
+                    .then(() => alert("Report sent. We will fix it soon!"))
+                    .catch(e => alert("Error: " + e.message));
+                }
+            }
+        }
+
+        function toggleFavorite() { 
+            let favs = JSON.parse(localStorage.getItem('myLibrary') || '[]'); 
+            const idx = favs.findIndex(f => f.id === currentMovie.id); 
+            if(idx > -1) favs.splice(idx, 1); else favs.push(currentMovie); 
+            localStorage.setItem('myLibrary', JSON.stringify(favs)); 
+            openModal(currentMovie); 
+        }
+
+        function showLibrary() { 
+            renderMovies(JSON.parse(localStorage.getItem('myLibrary') || '[]')); 
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); 
+            document.getElementById('nav-lib').classList.add('active'); 
+        }
+
+        function showHome() { 
+            renderMovies(allMovies); 
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); 
+            document.getElementById('nav-home').classList.add('active'); 
+        }
+    </script>
+</body>
+  </html>
