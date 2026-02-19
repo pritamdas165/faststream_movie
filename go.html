@@ -1,52 +1,74 @@
-<div class="container" style="max-width: 700px; margin: auto; background: #0a0a0b; color: white; padding: 20px;">
-    <img id="mPoster" style="width: 100%; border-radius: 10px;">
-    <h1 id="mTitle" style="color: #e50914; margin-top: 15px;"></h1>
-    
-    <div style="margin: 10px 0;">
-        <span id="mGenre" style="background: #333; padding: 5px 12px; border-radius: 5px; font-size: 13px;"></span>
-        <span style="background: #333; padding: 5px 12px; border-radius: 5px; font-size: 13px; margin-left: 5px;">2026</span>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Details | FastStream</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { font-family: sans-serif; background: #0a0a0b; color: white; margin: 0; padding: 15px; }
+        .container { max-width: 600px; margin: auto; }
+        .poster { width: 100%; border-radius: 12px; box-shadow: 0 0 15px rgba(229, 9, 20, 0.4); }
+        h1 { color: #e50914; font-size: 24px; margin: 15px 0; }
+        .section-title { border-left: 4px solid #e50914; padding-left: 10px; margin: 20px 0 10px; font-weight: bold; }
+        .content-box { background: #161618; padding: 15px; border-radius: 10px; color: #ccc; line-height: 1.6; }
+        .ss-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .ss-grid img { width: 100%; border-radius: 5px; }
+        .dl-btn { display: block; background: #e50914; color: white; text-align: center; padding: 15px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 25px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img id="mPoster" class="poster">
+        <h1 id="mTitle">Loading...</h1>
+        
+        <div class="section-title">Storyline</div>
+        <div id="mStory" class="content-box">No storyline available.</div>
+
+        <div class="section-title">Watch Trailer</div>
+        <div id="mTrailer"></div>
+
+        <div class="section-title">Screen-Shots</div>
+        <div id="mScreenshots" class="ss-grid"></div>
+
+        <a id="mDownload" class="dl-btn">DOWNLOAD MOVIE (HD)</a>
     </div>
 
-    <h3 style="border-left: 4px solid #e50914; padding-left: 10px;">Storyline</h3>
-    <p id="mStory" style="color: #ccc; line-height: 1.6;"></p>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4",
+            authDomain: "movie-project-b78b4.firebaseapp.com",
+            databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com",
+            projectId: "movie-project-b78b4",
+            storageBucket: "movie-project-b78b4.firebasestorage.app",
+            messagingSenderId: "819696212001",
+            appId: "1:819696212001:web:379b19305c6d604b2deb60"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-    <h3 style="border-left: 4px solid #e50914; padding-left: 10px;">Watch Trailer</h3>
-    <div id="ytPlayer"></div>
-
-    <h3 style="border-left: 4px solid #e50914; padding-left: 10px;">Screen-Shots</h3>
-    <div id="ssGrid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;"></div>
-
-    <div style="margin-top: 30px;">
-        <a id="dlBtn" style="display: block; background: #e50914; color: white; text-align: center; padding: 15px; border-radius: 8px; font-weight: bold; text-decoration: none;">DOWNLOAD MOVIE (HD)</a>
-    </div>
-</div>
-
-<script>
-    // URL theke Movie ID niye database theke data fetch korte hobe
-    // (Ami simplified logic dichhi)
-    const urlParams = new URLSearchParams(window.location.search);
-    const mId = urlParams.get('id'); // Jakhon index theke pathaben, id=... diye pathaben
-
-    db.ref('movies/' + mId).on('value', (snap) => {
-        const m = snap.val();
-        document.getElementById('mTitle').innerText = m.title;
-        document.getElementById('mPoster').src = m.poster;
-        document.getElementById('mStory').innerText = m.story;
-        document.getElementById('mGenre').innerText = m.genre;
-        document.getElementById('dlBtn').href = m.link;
-        
-        // Trailer setup
-        if(m.trailer) {
-            document.getElementById('ytPlayer').innerHTML = `<iframe width="100%" height="315" src="https://www.youtube.com/embed/${m.trailer}" frameborder="0" allowfullscreen></iframe>`;
-        }
-        
-        // Screenshot grid
-        if(m.screenshots) {
-            const imgs = m.screenshots.split(',');
-            const grid = document.getElementById('ssGrid');
-            imgs.forEach(url => {
-                grid.innerHTML += `<img src="${url.trim()}" style="width:100%; border-radius:5px;">`;
+        const mId = new URLSearchParams(window.location.search).get('id');
+        if(mId) {
+            db.ref('movies/' + mId).on('value', (snap) => {
+                const m = snap.val();
+                document.getElementById('mTitle').innerText = m.title;
+                document.getElementById('mPoster').src = m.poster;
+                document.getElementById('mStory').innerText = m.story || "No storyline found.";
+                document.getElementById('mDownload').href = m.link;
+                
+                if(m.trailer) {
+                    document.getElementById('mTrailer').innerHTML = `<iframe width="100%" height="200" src="https://www.youtube.com/embed/${m.trailer}" frameborder="0" allowfullscreen></iframe>`;
+                }
+                if(m.screenshots) {
+                    const ss = m.screenshots.split(',');
+                    const grid = document.getElementById('mScreenshots');
+                    grid.innerHTML = '';
+                    ss.forEach(url => { grid.innerHTML += `<img src="${url.trim()}">`; });
+                }
             });
         }
-    });
-</script>
+    </script>
+</body>
+</html>
