@@ -3,91 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FastStream | Premium Movies</title>
+    <title>FastStream | Premium OTT</title>
     <script>(function(s){s.dataset.zone='10626442',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root { --primary: #e50914; --bg: #0a0a0b; --card-bg: #161618; --text: #ffffff; }
         .light-mode { --bg: #f0f0f0; --card-bg: #ffffff; --text: #1a1a1a; }
-
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; transition: 0.3s; overflow-x: hidden; }
-        
-        /* Navbar */
         header { padding: 15px 20px; background: rgba(0,0,0,0.9); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 2px solid var(--primary); }
-        .logo { font-size: 22px; font-weight: bold; color: var(--primary); text-decoration: none; letter-spacing: 1px; }
-        .nav-icons { display: flex; gap: 20px; align-items: center; }
-        .nav-icons i { cursor: pointer; font-size: 18px; color: var(--text); }
-
-        /* --- UPGRADED GENRE SLIDER CSS --- */
-        .genre-container {
-            display: flex;
-            overflow-x: auto; /* Side-e scroll hobe */
-            padding: 15px;
-            gap: 12px;
-            white-space: nowrap;
-            scrollbar-width: none; /* Firefox-er jonno */
-            -ms-overflow-style: none; /* IE-er jonno */
-        }
-        .genre-container::-webkit-scrollbar {
-            display: none; /* Chrome/Safari scrollbar hide */
-        }
-        .genre-btn {
-            background: #1c1d24; 
-            color: white;
-            padding: 10px 22px;
-            border-radius: 25px; 
-            font-size: 14px;
-            font-weight: 500;
-            border: 1px solid #333;
-            cursor: pointer;
-            transition: 0.3s;
-            display: inline-block;
-        }
-        .genre-btn.active {
-            background: var(--primary); 
-            border-color: var(--primary);
-            box-shadow: 0 0 10px rgba(229, 9, 20, 0.4);
-        }
-        /* ---------------------------------- */
-
-        /* Search Box */
-        .search-box { padding: 10px 15px; }
-        .search-box input { width: 100%; padding: 12px 20px; border-radius: 30px; border: 1px solid #333; background: var(--card-bg); color: var(--text); outline: none; box-sizing: border-box; }
-
-        /* Movie Grid */
-        .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; padding: 15px; justify-content: center; }
-        .movie-card { background: var(--card-bg); border-radius: 12px; overflow: hidden; position: relative; transition: 0.3s; border: 1px solid #222; cursor: pointer; }
-        .movie-card:hover { transform: translateY(-5px); border-color: var(--primary); }
-        .movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
+        .logo { font-size: 22px; font-weight: bold; color: var(--primary); text-decoration: none; }
         
-        .badge { position: absolute; top: 8px; right: 8px; background: var(--primary); color: white; font-size: 10px; padding: 3px 8px; border-radius: 5px; font-weight: bold; z-index: 10; }
-        .info { padding: 10px; text-align: center; }
-        .info h3 { font-size: 13px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        /* Slider Styles */
+        #slider { width: 100%; height: 220px; overflow: hidden; position: relative; background: #000; }
+        #slideContent { display: flex; transition: 0.8s ease-in-out; height: 100%; }
+        .slide-item { min-width: 100%; position: relative; }
+        .slide-item img { width: 100%; height: 100%; object-fit: cover; opacity: 0.7; }
+        .slide-info { position: absolute; bottom: 20px; left: 20px; color: white; text-shadow: 2px 2px 5px rgba(0,0,0,1); }
 
-        @media (min-width: 768px) { .movie-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); } }
+        .genre-container { display: flex; overflow-x: auto; padding: 15px; gap: 12px; white-space: nowrap; scrollbar-width: none; }
+        .genre-container::-webkit-scrollbar { display: none; }
+        .genre-btn { background: #1c1d24; color: white; padding: 10px 22px; border-radius: 25px; border: 1px solid #333; cursor: pointer; }
+        .genre-btn.active { background: var(--primary); border-color: var(--primary); }
+
+        .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; padding: 15px; }
+        .movie-card { background: var(--card-bg); border-radius: 12px; overflow: hidden; position: relative; border: 1px solid #222; cursor: pointer; }
+        .movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
+        .badge { position: absolute; top: 8px; right: 8px; background: var(--primary); color: white; font-size: 10px; padding: 3px 8px; border-radius: 5px; font-weight: bold; }
+        @media (min-width: 768px) { #slider { height: 400px; } .movie-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); } }
     </style>
 </head>
 <body>
-
     <header>
         <a href="index.html" class="logo">FASTSTREAM</a>
-        <div class="nav-icons">
-            <i class="fas fa-moon" id="themeBtn" onclick="toggleTheme()"></i>
-            <i class="fas fa-search" onclick="document.getElementById('searchInput').focus()"></i>
-        </div>
+        <div class="nav-icons"><i class="fas fa-moon" onclick="toggleTheme()"></i></div>
     </header>
 
-    <div class="genre-container">
+    <div id="slider"><div id="slideContent"></div></div>
+
+    <div class="genre-container" id="genres">
         <div class="genre-btn active" onclick="filterGenre('All', this)">All</div>
         <div class="genre-btn" onclick="filterGenre('Action', this)">Action</div>
         <div class="genre-btn" onclick="filterGenre('Drama', this)">Drama</div>
-        <div class="genre-btn" onclick="filterGenre('Horror', this)">Horror</div>
         <div class="genre-btn" onclick="filterGenre('South', this)">South Indian</div>
-        <div class="genre-btn" onclick="filterGenre('Hindi', this)">Hindi Dubbed</div>
-    </div>
-
-    <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Search movies..." onkeyup="searchMovie()">
     </div>
 
     <div class="movie-grid" id="movieGrid"></div>
@@ -107,46 +64,40 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Load Movies
+        // Load Slider & Grid
         db.ref('movies').on('value', (snap) => {
             const grid = document.getElementById('movieGrid');
-            grid.innerHTML = '';
+            const slider = document.getElementById('slideContent');
+            grid.innerHTML = ''; slider.innerHTML = '';
+            let count = 0;
             snap.forEach((child) => {
                 const m = child.val();
+                if(count < 5) {
+                    slider.innerHTML += `<div class="slide-item"><img src="${m.poster}"><div class="slide-info"><h2>${m.title}</h2></div></div>`;
+                    count++;
+                }
                 grid.innerHTML += `
                     <div class="movie-card" onclick="location.href='go.html?url=${btoa(m.link)}'">
                         <div class="badge">${m.quality || 'HD'}</div>
-                        <img src="${m.poster}" alt="${m.title}">
-                        <div class="info"><h3>${m.title}</h3></div>
+                        <img src="${m.poster}">
+                        <div style="padding:10px; text-align:center;"><h3>${m.title}</h3></div>
                     </div>`;
             });
         });
 
-        function toggleTheme() {
-            document.body.classList.toggle('light-mode');
-            const icon = document.getElementById('themeBtn');
-            icon.classList.toggle('fa-sun');
-            icon.classList.toggle('fa-moon');
-        }
+        // Auto Slider Logic
+        let slideIdx = 0;
+        setInterval(() => {
+            slideIdx = (slideIdx + 1) % 5;
+            document.getElementById('slideContent').style.transform = `translateX(-${slideIdx * 100}%)`;
+        }, 4000);
 
-        function searchMovie() {
-            let input = document.getElementById('searchInput').value.toLowerCase();
-            let cards = document.getElementsByClassName('movie-card');
-            for(let card of cards) {
-                card.style.display = card.innerText.toLowerCase().includes(input) ? "block" : "none";
-            }
-        }
-
+        function toggleTheme() { document.body.classList.toggle('light-mode'); }
         function filterGenre(genre, btn) {
-            let btns = document.getElementsByClassName('genre-btn');
-            for(let b of btns) b.classList.remove('active');
+            let btns = document.querySelectorAll('.genre-btn'); btns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            
-            let cards = document.getElementsByClassName('movie-card');
-            for(let card of cards) {
-                if(genre === 'All') card.style.display = "block";
-                else card.style.display = card.innerText.includes(genre) ? "block" : "none";
-            }
+            let cards = document.querySelectorAll('.movie-card');
+            cards.forEach(c => c.style.display = (genre === 'All' || c.innerText.includes(genre)) ? "block" : "none");
         }
     </script>
 </body>
