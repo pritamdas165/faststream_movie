@@ -10,14 +10,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root { --primary: #e50914; --bg: #0a0a0b; --card: #161618; --text-dim: #b3b3b3; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; padding-bottom: 100px; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; padding-bottom: 120px; }
         
         /* Premium Background Banner */
         .hero { position: relative; width: 100%; height: 260px; overflow: hidden; }
         .hero img { width: 100%; height: 100%; object-fit: cover; opacity: 0.3; filter: blur(8px); }
         .hero-overlay { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, var(--bg), transparent); }
         
-        /* Main Content Container */
         .container { max-width: 600px; margin: auto; padding: 0 15px; position: relative; margin-top: -130px; }
         .main-poster { width: 155px; height: 225px; border-radius: 12px; object-fit: cover; box-shadow: 0 15px 35px rgba(0,0,0,0.9); border: 2px solid #333; }
         
@@ -30,16 +29,18 @@
         
         iframe { width: 100%; height: 215px; border-radius: 12px; border: 1px solid #333; background: #000; margin-top: 5px; }
         
-        /* AD SLOT PLACEHOLDERS */
         .ad-area { width: 100%; text-align: center; margin: 20px 0; background: #111; padding: 12px; border-radius: 10px; font-size: 12px; color: #444; border: 1px dashed #333; }
 
         .ss-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .ss-grid img { width: 100%; border-radius: 10px; border: 1px solid #333; transition: 0.3s; }
+        .ss-grid img { width: 100%; border-radius: 10px; border: 1px solid #333; }
 
         /* Floating Sticky Download Bar */
         .dl-container { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(10,10,11,0.95); padding: 15px; box-sizing: border-box; backdrop-filter: blur(15px); border-top: 1px solid #333; display: flex; flex-direction: column; align-items: center; z-index: 1000; }
-        .dl-btn { background: var(--primary); color: white; text-align: center; width: 100%; max-width: 500px; padding: 16px; border-radius: 12px; text-decoration: none; font-weight: bold; font-size: 18px; display: flex; align-items: center; justify-content: center; gap: 12px; box-shadow: 0 8px 25px rgba(229, 9, 20, 0.4); }
-        .dl-btn:active { transform: scale(0.98); }
+        .dl-btn { background: var(--primary); color: white; text-align: center; width: 100%; max-width: 500px; padding: 16px; border-radius: 12px; text-decoration: none; font-weight: bold; font-size: 18px; display: flex; align-items: center; justify-content: center; gap: 12px; cursor: pointer; border: none; outline: none; transition: 0.3s; }
+        .dl-btn.waiting { background: #555; cursor: not-allowed; opacity: 0.8; }
+        
+        /* Timer Text Style */
+        #timerText { font-size: 14px; color: #aaa; margin-bottom: 8px; font-weight: normal; }
     </style>
 </head>
 <body>
@@ -51,7 +52,7 @@
 
     <div class="container">
         <img id="mPoster" class="main-poster" src="">
-        <h1 id="mTitle">Loading Movie Details...</h1>
+        <h1 id="mTitle">Loading...</h1>
 
         <div class="meta-info">
             <span id="mGenre">Genre</span>
@@ -61,7 +62,7 @@
         <div class="ad-area">ADVERTISEMENT (Loading...)</div>
 
         <div class="section-title">Storyline</div>
-        <div id="mStory" class="content-box">Wait for storyline...</div>
+        <div id="mStory" class="content-box">Wait...</div>
 
         <div class="section-title">Watch Official Trailer</div>
         <div id="mTrailer"></div>
@@ -73,9 +74,10 @@
     </div>
 
     <div class="dl-container">
-        <a id="mDownload" class="dl-btn" onclick="return handleAdClick()">
-            <i class="fas fa-cloud-download-alt"></i> DOWNLOAD MOVIE (HD)
-        </a>
+        <div id="timerText" style="display: none;">Please wait <span id="seconds">10</span> seconds...</div>
+        <button id="mDownloadBtn" class="dl-btn" onclick="startDownloadTimer()">
+            <i class="fas fa-cloud-download-alt"></i> DOWNLOAD MOVIE
+        </button>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -94,32 +96,22 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Get Movie ID from URL
         const mId = new URLSearchParams(window.location.search).get('id');
         let downloadLink = ""; 
 
         if(mId) {
             db.ref('movies/' + mId).on('value', (snap) => {
                 const m = snap.val();
-                if(!m) {
-                    document.getElementById('mTitle').innerText = "Movie Not Found!";
-                    return;
-                }
+                if(!m) return;
                 
-                // Filling Data
                 document.getElementById('mTitle').innerText = m.title;
                 document.getElementById('mPoster').src = m.poster;
                 document.getElementById('mBanner').src = m.poster;
                 document.getElementById('mStory').innerText = m.story || "No storyline added.";
                 document.getElementById('mGenre').innerText = m.genre || "Action";
                 document.getElementById('mQuality').innerText = m.quality || "HD Quality";
-                
-                // Store and Set Link
                 downloadLink = m.link;
-                document.getElementById('mDownload').setAttribute('href', downloadLink);
-                document.getElementById('mDownload').setAttribute('target', '_blank');
 
-                // Trailer ID Extractor
                 if(m.trailer) {
                     let ytId = m.trailer.trim();
                     if(ytId.includes('v=')) ytId = ytId.split('v=')[1].split('&')[0];
@@ -127,7 +119,6 @@
                     document.getElementById('mTrailer').innerHTML = `<iframe src="https://www.youtube.com/embed/${ytId}" frameborder="0" allowfullscreen></iframe>`;
                 }
 
-                // Screenshot Grid Fix
                 if(m.screenshots) {
                     const ss = m.screenshots.split(',');
                     const grid = document.getElementById('mScreenshots');
@@ -139,14 +130,39 @@
             });
         }
 
-        // Logic to Handle Ads & Redirects
-        function handleAdClick() {
-            if(downloadLink === "" || downloadLink === "#") {
-                alert("Download link is loading, please wait...");
-                return false;
-            }
-            // Tag.min.js handles the pop-under on the first click
-            return true; 
+        // ✅ Timer Logic for Ads & Revenue
+        function startDownloadTimer() {
+            if(!downloadLink) return alert("Link is loading...");
+
+            const btn = document.getElementById('mDownloadBtn');
+            const timerTxt = document.getElementById('timerText');
+            const secSpan = document.getElementById('seconds');
+            let timeLeft = 10;
+
+            // Step 1: Disable button and show timer
+            btn.onclick = null; // Disable click
+            btn.classList.add('waiting');
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> GENERATING LINK...`;
+            timerTxt.style.display = "block";
+
+            // Step 2: Countdown
+            const timer = setInterval(() => {
+                timeLeft--;
+                secSpan.innerText = timeLeft;
+
+                if(timeLeft <= 0) {
+                    clearInterval(timer);
+                    // Step 3: Finalize Button
+                    timerTxt.style.display = "none";
+                    btn.classList.remove('waiting');
+                    btn.style.background = "#28a745"; // Green success color
+                    btn.innerHTML = `<i class="fas fa-check-circle"></i> GET DOWNLOAD LINK`;
+                    
+                    btn.onclick = function() {
+                        window.open(downloadLink, '_blank');
+                    };
+                }
+            }, 1000);
         }
     </script>
 </body>
