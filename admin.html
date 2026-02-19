@@ -3,51 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel | FastStream</title>
+    <title>FastStream Admin Fix</title>
     <style>
         :root { --primary: #e50914; --bg: #0f1014; --box: #1c1d24; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; padding: 20px; margin: 0; }
-        .box { background: var(--box); padding: 20px; border-radius: 12px; max-width: 500px; margin: 15px auto; border: 1px solid #333; }
-        input, textarea { width: 100%; padding: 12px; margin: 8px 0; background: #2a2b33; border: 1px solid #444; border-radius: 8px; color: white; box-sizing: border-box; outline: none; }
-        .btn { background: var(--primary); color: white; width: 100%; padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-search { background: #28a745; margin-bottom: 15px; }
-        label { font-size: 14px; color: #aaa; margin-top: 10px; display: block; }
+        body { font-family: sans-serif; background: var(--bg); color: white; padding: 20px; }
+        .box { background: var(--box); padding: 20px; border-radius: 12px; max-width: 480px; margin: auto; border: 1px solid #333; }
+        input, textarea { width: 100%; padding: 12px; margin: 8px 0; background: #2a2b33; border: 1px solid #444; border-radius: 8px; color: white; box-sizing: border-box; }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn-search { background: #28a745; color: white; margin-bottom: 15px; }
+        .btn-save { background: var(--primary); color: white; margin-top: 10px; }
     </style>
 </head>
 <body>
 
     <div class="box">
-        <h2 style="color: #28a745;">⚡ Auto-Fetch</h2>
+        <h2 style="color:#28a745">⚡ Quick Search</h2>
         <input type="text" id="movieSearchInput" placeholder="Enter Movie Name (e.g. Kick)">
         <button class="btn btn-search" onclick="fetchTMDBData()">SEARCH & FILL DATA</button>
-    </div>
-
-    <div class="box">
-        <h2>Movie Details</h2>
-        
-        <label>Movie Title</label>
+        <hr style="border:0.5px solid #444; margin: 20px 0;">
         <input type="text" id="title" placeholder="Movie Title">
-        
-        <label>Poster URL</label>
         <input type="text" id="poster" placeholder="Poster Link">
-        
-        <label>Download Link</label>
-        <input type="text" id="link" placeholder="Paste Download Link">
-        
-        <label>Storyline</label>
+        <input type="text" id="link" placeholder="Download Link">
         <textarea id="story" rows="4" placeholder="Storyline..."></textarea>
-        
-        <label>YouTube Trailer ID</label>
-        <input type="text" id="yt" placeholder="Trailer ID Only">
-
-        <button class="btn" onclick="saveToFirebase()">PUBLISH MOVIE</button>
+        <input type="text" id="yt" placeholder="Trailer ID">
+        <button class="btn btn-save" onclick="saveToFirebase()">PUBLISH MOVIE</button>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
     <script>
-        // Apnar Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4",
             authDomain: "movie-project-b78b4.firebaseapp.com",
@@ -60,45 +45,41 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // FIXED SEARCH FUNCTION
         async function fetchTMDBData() {
             const name = document.getElementById('movieSearchInput').value;
-            const apiKey = "cc9374659de08b939499a50af4715216"; 
+            const apiKey = "cc9374659de08b939499a50af4715216"; // Fixed API Key
             
-            if(!name) {
-                alert("Please enter a movie name!");
-                return;
-            }
+            if(!name) { alert("Please enter a movie name!"); return; }
 
             try {
-                const url = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(name)}`;
-                const response = await fetch(url);
-                const data = await response.json();
+                // Movie Search call
+                const searchRes = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(name)}`);
+                const searchData = await searchRes.json();
                 
-                if(data.results && data.results.length > 0) {
-                    const movie = data.results[0];
+                if(searchData.results && searchData.results.length > 0) {
+                    const movie = searchData.results[0];
                     
-                    // Auto-filling the fields
-                    document.getElementById('title').value = movie.title + " (" + movie.release_date.split('-')[0] + ")";
-                    document.getElementById('poster').value = "https://image.tmdb.org/t/p/w500" + movie.poster_path;
-                    document.getElementById('story').value = movie.overview;
+                    // Detail fetch for Trailer & Full Story
+                    const detailRes = await fetch(`https://api.themoviedb.org/3/movie/${movie.id}?api_key=${apiKey}&append_to_response=videos`);
+                    const details = await detailRes.json();
 
-                    // Fetching Trailer ID
-                    const videoRes = await fetch(`https://api.themoviedb.org/3/movie/${movie.id}/videos?api_key=${apiKey}`);
-                    const videoData = await videoRes.json();
-                    const trailer = videoData.results.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+                    document.getElementById('title').value = details.title + " (" + details.release_date.split('-')[0] + ")";
+                    document.getElementById('poster').value = "https://image.tmdb.org/t/p/w500" + details.poster_path;
+                    document.getElementById('story').value = details.overview;
+
+                    const trailer = details.videos.results.find(v => v.type === 'Trailer' && v.site === 'YouTube');
                     if(trailer) document.getElementById('yt').value = trailer.key;
 
-                    alert("✅ Movie Found: " + movie.title);
+                    alert("✅ Success: Movie Data Fetched!");
                 } else {
-                    alert("❌ Movie Not Found in TMDB database!");
+                    alert("❌ No Movie Found!");
                 }
             } catch (error) {
-                alert("⚠️ Connection Error!");
+                console.error(error);
+                alert("⚠️ Error fetching data. Check your internet!");
             }
         }
 
-        // SAVE TO FIREBASE
         function saveToFirebase() {
             const data = {
                 title: document.getElementById('title').value,
@@ -107,15 +88,12 @@
                 story: document.getElementById('story').value,
                 trailer: document.getElementById('yt').value
             };
-
             if(data.title && data.poster) {
                 db.ref('movies').push(data).then(() => {
                     alert("✅ Published Successfully!");
                     location.reload();
                 });
-            } else {
-                alert("Please fill Title and Poster!");
-            }
+            } else { alert("Fill the data first!"); }
         }
     </script>
 </body>
