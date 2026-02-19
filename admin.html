@@ -3,157 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>StreamAdmin | Mobile Friendly</title>
+    <title>StreamAdmin | Premium</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root { --primary: #e50914; --bg: #0f1014; --card: #1c1d24; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; padding-bottom: 70px; }
-        
-        /* Mobile Bottom Navigation */
-        .sidebar { width: 100%; background: #000; height: auto; padding: 10px 0; position: fixed; bottom: 0; border-top: 1px solid #333; z-index: 1000; border-right: none; }
-        .sidebar h2 { display: none; } /* Hide title on mobile nav */
-        .sidebar nav { display: flex; justify-content: space-around; }
-        .sidebar nav a { color: #888; padding: 10px; text-decoration: none; font-size: 14px; text-align: center; }
-        .sidebar nav a i { display: block; font-size: 20px; margin-bottom: 5px; }
+        .sidebar { width: 100%; background: #000; position: fixed; bottom: 0; border-top: 1px solid #333; z-index: 1000; }
+        .sidebar nav { display: flex; justify-content: space-around; padding: 10px; }
+        .sidebar nav a { color: #888; text-decoration: none; font-size: 12px; text-align: center; }
+        .sidebar nav a i { display: block; font-size: 20px; margin-bottom: 3px; }
         .sidebar nav a.active { color: var(--primary); }
-
-        /* Main Content Adjustments */
-        .main-content { margin-left: 0; padding: 15px; width: 100%; box-sizing: border-box; }
-        .header h1 { font-size: 22px; margin-bottom: 5px; }
-        
-        /* Responsive Form Card */
-        .upload-card { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #333; display: flex; flex-direction: column; gap: 15px; }
-        label { display: block; color: #aaa; margin-bottom: 5px; font-size: 14px; }
-        input { width: 100%; padding: 12px; background: #2a2b33; border: 1px solid #444; border-radius: 8px; color: white; box-sizing: border-box; font-size: 16px; }
-        
-        /* Mobile Preview Box */
-        .preview-box { background: #2a2b33; border-radius: 10px; height: 180px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px dashed #444; }
-        #posterPreview { max-height: 100%; width: auto; }
-
-        .btn-upload { background: var(--primary); color: white; padding: 15px; border: none; border-radius: 8px; font-weight: bold; width: 100%; font-size: 16px; margin-top: 10px; }
-
-        /* Table responsive for Mobile */
-        .movie-list { margin-top: 25px; overflow-x: auto; }
-        table { width: 100%; min-width: 300px; }
-        .thumb { width: 40px; height: 50px; border-radius: 4px; }
-
-        /* Tablet/Desktop View */
-        @media (min-width: 768px) {
-            body { padding-bottom: 0; }
-            .sidebar { width: 250px; height: 100vh; top: 0; bottom: auto; border-right: 1px solid #333; border-top: none; }
-            .sidebar h2 { display: block; padding: 20px; text-align: center; }
-            .sidebar nav { flex-direction: column; padding: 20px; }
-            .sidebar nav a { text-align: left; padding: 12px 0; }
-            .sidebar nav a i { display: inline; font-size: 16px; margin-right: 10px; }
-            .main-content { margin-left: 250px; padding: 40px; }
-            .upload-card { display: grid; grid-template-columns: 1fr 1fr; }
-            .btn-upload { grid-column: span 2; }
-        }
+        .main-content { padding: 15px; box-sizing: border-box; }
+        .upload-card { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #333; display: flex; flex-direction: column; gap: 12px; }
+        label { display: block; color: #aaa; font-size: 13px; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 12px; background: #2a2b33; border: 1px solid #444; border-radius: 8px; color: white; font-size: 15px; box-sizing: border-box; }
+        .btn-upload { background: var(--primary); color: white; padding: 15px; border: none; border-radius: 8px; font-weight: bold; width: 100%; font-size: 16px; margin-top: 10px; cursor: pointer; }
+        @media (min-width: 768px) { .main-content { max-width: 600px; margin: auto; padding-top: 50px; } }
     </style>
 </head>
 <body>
-
     <div class="sidebar">
-        <h2>FastStream</h2>
         <nav>
-            <a href="#" class="active"><i class="fas fa-plus-circle"></i> <span>Add</span></a>
-            <a href="index.html" target="_blank"><i class="fas fa-external-link-alt"></i> <span>Site</span></a>
-            <a href="#"><i class="fas fa-chart-line"></i> <span>Stats</span></a>
-            <a href="#"><i class="fas fa-cog"></i> <span>Set</span></a>
+            <a href="#" class="active"><i class="fas fa-plus-circle"></i> Add</a>
+            <a href="index.html" target="_blank"><i class="fas fa-external-link-alt"></i> Site</a>
         </nav>
     </div>
-
     <div class="main-content">
-        <div class="header">
-            <h1>Upload Content</h1>
-            <p id="statusMsg" style="color: #aaa; font-size: 14px;">System Ready</p>
-        </div>
-
+        <h2>🚀 Upload Movie</h2>
         <div class="upload-card">
-            <div class="form-inputs">
-                <div class="input-group">
-                    <label>Movie Title</label>
-                    <input type="text" id="movieTitle" placeholder="e.g. Pushpa 2">
-                </div>
-                <div class="input-group">
-                    <label>Poster URL</label>
-                    <input type="text" id="moviePoster" oninput="updatePreview()" placeholder="https://image.jpg">
-                </div>
-                <div class="input-group">
-                    <label>Download/Ad Link</label>
-                    <input type="text" id="movieLink" placeholder="Paste link here">
-                </div>
-            </div>
-            
-            <div class="preview-side">
-                <label>Preview</label>
-                <div class="preview-box">
-                    <i id="previewPlaceholder" class="fas fa-image" style="font-size: 30px; color: #444;"></i>
-                    <img id="posterPreview" src="" alt="" style="display:none;">
-                </div>
-            </div>
-
-            <button class="btn-upload" onclick="uploadMovie()">
-                <i class="fas fa-cloud-upload-alt"></i> PUBLISH NOW
-            </button>
-        </div>
-
-        <div class="movie-list">
-            <h3>Recent Items</h3>
-            <table id="movieTable">
-                <thead>
-                    <tr>
-                        <th>Poster</th>
-                        <th>Title</th>
-                    </tr>
-                </thead>
-                <tbody id="movieTableBody"></tbody>
-            </table>
+            <input type="text" id="movieTitle" placeholder="Movie Title (e.g. Pushpa 2)">
+            <input type="text" id="moviePoster" placeholder="Poster Image URL">
+            <input type="text" id="movieLink" placeholder="Monetag Direct Link">
+            <label>Select Quality</label>
+            <select id="movieQuality">
+                <option value="HD 720p">HD 720p</option>
+                <option value="1080p FHD">1080p FHD</option>
+                <option value="4K UHD">4K UHD</option>
+                <option value="Dual Audio">Dual Audio</option>
+            </select>
+            <button class="btn-upload" onclick="uploadMovie()">PUBLISH NOW</button>
+            <p id="statusMsg" style="text-align:center; color:#888;"></p>
         </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-
     <script>
-        // Use your existing Firebase Config
         const firebaseConfig = {
-  apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4",
-  authDomain: "movie-project-b78b4.firebaseapp.com",
-  databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com",
-  projectId: "movie-project-b78b4",
-  storageBucket: "movie-project-b78b4.firebasestorage.app",
-  messagingSenderId: "819696212001",
-  appId: "1:819696212001:web:379b19305c6d604b2deb60"
-};
-
-firebase.initializeApp(firebaseConfig);
+            apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4",
+            authDomain: "movie-project-b78b4.firebaseapp.com",
+            databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com",
+            projectId: "movie-project-b78b4",
+            storageBucket: "movie-project-b78b4.firebasestorage.app",
+            messagingSenderId: "819696212001",
+            appId: "1:819696212001:web:379b19305c6d604b2deb60"
+        };
+        firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-
-        function updatePreview() {
-            const url = document.getElementById('moviePoster').value;
-            const img = document.getElementById('posterPreview');
-            const icon = document.getElementById('previewPlaceholder');
-            if (url) {
-                img.src = url; img.style.display = 'block'; icon.style.display = 'none';
-            }
-        }
 
         function uploadMovie() {
             const title = document.getElementById('movieTitle').value;
             const poster = document.getElementById('moviePoster').value;
             const link = document.getElementById('movieLink').value;
+            const quality = document.getElementById('movieQuality').value;
             const status = document.getElementById('statusMsg');
 
             if (title && poster && link) {
-                database.ref('movies').push({ title, poster, link, timestamp: Date.now() })
+                database.ref('movies').push({ title, poster, link, quality, timestamp: Date.now() })
                 .then(() => {
-                    status.innerText = "✅ Success!";
+                    status.innerText = "✅ Movie Added Successfully!";
                     document.getElementById('movieTitle').value = '';
                     document.getElementById('moviePoster').value = '';
                     document.getElementById('movieLink').value = '';
                 });
-            }
+            } else { status.innerText = "⚠️ Fill all fields!"; }
         }
     </script>
 </body>
