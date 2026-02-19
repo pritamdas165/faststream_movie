@@ -3,32 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FastStream | Watch & Download Movies</title>
+    <title>FastStream | Premium OTT</title>
     <script>(function(s){s.dataset.zone='10626442',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        :root { --primary: #e50914; --bg: #0a0a0b; --card-bg: #161618; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; padding: 0; }
-        header { padding: 15px; background: rgba(0,0,0,0.9); border-bottom: 2px solid var(--primary); text-align: center; position: sticky; top: 0; z-index: 1000; }
-        .logo { font-size: 26px; font-weight: bold; color: var(--primary); letter-spacing: 2px; }
-        .search-container { padding: 10px; display: flex; justify-content: center; background: #000; }
-        #search { width: 90%; max-width: 500px; padding: 10px 15px; border-radius: 20px; border: 1px solid #333; background: #222; color: white; }
-        .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; padding: 20px; justify-content: center; }
-        .movie-card { background: var(--card-bg); border-radius: 10px; overflow: hidden; position: relative; transition: 0.3s; border: 1px solid #222; cursor: pointer; }
-        .movie-card:hover { transform: translateY(-5px); border-color: var(--primary); }
+        :root { --primary: #e50914; --bg: #0a0a0b; --card-bg: #161618; --text: #ffffff; }
+        .light-mode { --bg: #f0f0f0; --card-bg: #ffffff; --text: #1a1a1a; }
+
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; transition: 0.3s; }
+        
+        /* Navbar */
+        header { padding: 15px 20px; background: rgba(0,0,0,0.9); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 2px solid var(--primary); }
+        .logo { font-size: 22px; font-weight: bold; color: var(--primary); text-decoration: none; }
+        .nav-icons { display: flex; gap: 15px; align-items: center; }
+        .nav-icons i { cursor: pointer; font-size: 18px; }
+
+        /* Genre Slider */
+        .genre-container { display: flex; overflow-x: auto; padding: 10px 15px; gap: 10px; white-space: nowrap; scrollbar-width: none; }
+        .genre-btn { background: var(--card-bg); padding: 8px 18px; border-radius: 20px; font-size: 13px; border: 1px solid #333; cursor: pointer; color: var(--text); }
+        .genre-btn.active { background: var(--primary); border-color: var(--primary); color: white; }
+
+        /* Search Bar */
+        .search-box { padding: 10px 20px; }
+        .search-box input { width: 100%; padding: 12px; border-radius: 25px; border: 1px solid #333; background: var(--card-bg); color: var(--text); outline: none; box-sizing: border-box; }
+
+        /* Movie Grid */
+        .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; padding: 15px; justify-content: center; }
+        .movie-card { background: var(--card-bg); border-radius: 10px; overflow: hidden; position: relative; transition: 0.3s; border: 1px solid #333; cursor: pointer; }
+        .movie-card:hover { transform: scale(1.03); border-color: var(--primary); }
         .movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
-        .badge { position: absolute; top: 8px; right: 8px; background: var(--primary); color: white; font-size: 10px; padding: 3px 7px; border-radius: 4px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
-        .info { padding: 10px; text-align: center; }
-        .info h3 { font-size: 13px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .badge { position: absolute; top: 5px; right: 5px; background: var(--primary); color: white; font-size: 9px; padding: 3px 6px; border-radius: 4px; font-weight: bold; }
+        .info { padding: 8px; text-align: center; }
+        .info h3 { font-size: 12px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
         @media (min-width: 768px) { .movie-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); } }
     </style>
 </head>
 <body>
-    <header><div class="logo">FASTSTREAM</div></header>
-    <div class="search-container">
-        <input type="text" id="search" placeholder="Search movies..." onkeyup="searchMovie()">
+
+    <header>
+        <a href="#" class="logo">FASTSTREAM</a>
+        <div class="nav-icons">
+            <i class="fas fa-moon" id="themeBtn" onclick="toggleTheme()"></i>
+            <i class="fas fa-bars"></i>
+        </div>
+    </header>
+
+    <div class="genre-container">
+        <div class="genre-btn active" onclick="filterGenre('All')">All</div>
+        <div class="genre-btn" onclick="filterGenre('Action')">Action</div>
+        <div class="genre-btn" onclick="filterGenre('Drama')">Drama</div>
+        <div class="genre-btn" onclick="filterGenre('Horror')">Horror</div>
+        <div class="genre-btn" onclick="filterGenre('South')">South Indian</div>
     </div>
-    <div class="movie-grid" id="movieGrid"></div>
+
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Search by movie name..." onkeyup="searchMovie()">
+    </div>
+
+    <div class="movie-grid" id="movieGrid">
+        </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -45,6 +79,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // Load Movies
         db.ref('movies').on('value', (snap) => {
             const grid = document.getElementById('movieGrid');
             grid.innerHTML = '';
@@ -59,11 +94,35 @@
             });
         });
 
+        // Theme Toggle
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+            const icon = document.getElementById('themeBtn');
+            icon.classList.toggle('fa-sun');
+            icon.classList.toggle('fa-moon');
+        }
+
+        // Search Function
         function searchMovie() {
-            let input = document.getElementById('search').value.toLowerCase();
+            let input = document.getElementById('searchInput').value.toLowerCase();
             let cards = document.getElementsByClassName('movie-card');
             for(let card of cards) {
                 card.style.display = card.innerText.toLowerCase().includes(input) ? "block" : "none";
+            }
+        }
+
+        // Genre Filter
+        function filterGenre(genre) {
+            // Highlighting active button
+            let btns = document.getElementsByClassName('genre-btn');
+            for(let btn of btns) btn.classList.remove('active');
+            event.target.classList.add('active');
+            
+            // Simple Filter Logic
+            let cards = document.getElementsByClassName('movie-card');
+            for(let card of cards) {
+                if(genre === 'All') card.style.display = "block";
+                else card.style.display = card.innerText.includes(genre) ? "block" : "none";
             }
         }
     </script>
