@@ -3,50 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TMDB Auto-Admin | FastStream</title>
+    <title>FastStream | Auto-Admin</title>
     <style>
         :root { --primary: #e50914; --bg: #0f1014; --box: #1c1d24; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; padding: 20px; margin: 0; }
         .box { background: var(--box); padding: 20px; border-radius: 12px; max-width: 600px; margin: 15px auto; border: 1px solid #333; }
-        input, textarea, select { width: 100%; padding: 12px; margin: 8px 0; background: #2a2b33; border: 1px solid #444; border-radius: 8px; color: white; box-sizing: border-box; outline: none; }
-        .btn { background: var(--primary); color: white; width: 100%; padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        input, textarea { width: 100%; padding: 12px; margin: 8px 0; background: #2a2b33; border: 1px solid #444; border-radius: 8px; color: white; box-sizing: border-box; outline: none; }
+        .btn { background: var(--primary); color: white; width: 100%; padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .btn-search { background: #28a745; margin-bottom: 10px; }
         .item { display: flex; justify-content: space-between; background: #16171d; padding: 12px; margin-top: 8px; border-radius: 6px; align-items: center; border-left: 3px solid var(--primary); }
-        .del-btn { background: #ff4d4d; border: none; color: white; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="box">
         <h2 style="color: #28a745;">⚡ Quick Auto-Fetch</h2>
-        <p style="font-size: 12px; color: #888;">Enter Movie Name and click Search to autofill data.</p>
-        <input type="text" id="searchName" placeholder="Enter Movie Name (e.g. Arjun Reddy)">
+        <input type="text" id="searchName" placeholder="Enter Movie Name (e.g. Pushpa 2)">
         <button class="btn btn-search" onclick="fetchMovie()">SEARCH & FILL DATA</button>
     </div>
 
     <div class="box">
         <h2 id="formTitle">Movie Details</h2>
         <input type="hidden" id="editKey">
-        
-        <label>Title</label>
         <input type="text" id="t" placeholder="Movie Title">
-        
-        <label>Poster URL</label>
         <input type="text" id="p" placeholder="Poster Link">
-        
-        <label>Download Link (Monetag)</label>
-        <input type="text" id="l" placeholder="Paste Download Link">
-        
-        <label>Storyline</label>
+        <input type="text" id="l" placeholder="Download Link">
         <textarea id="s" placeholder="Storyline..."></textarea>
-        
-        <label>Screenshots (Comma separated)</label>
-        <input type="text" id="ss" placeholder="url1.jpg, url2.jpg">
-        
-        <label>YouTube Trailer ID</label>
+        <input type="text" id="ss" placeholder="Screenshots (url1, url2)">
         <input type="text" id="yt" placeholder="Trailer ID Only">
-
-        <button class="btn" id="submitBtn" onclick="saveMovie()">PUBLISH MOVIE</button>
+        <button class="btn" onclick="saveMovie()">PUBLISH MOVIE</button>
     </div>
 
     <div class="box">
@@ -69,17 +54,18 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // --- TMDB API LOGIC ---
+        // --- FIXED API LOGIC ---
         async function fetchMovie() {
             const name = document.getElementById('searchName').value;
-            const apiKey = "cc9374659de08b939499a50af4715216";
+            const apiKey = "cc9374659de08b939499a50af4715216"; // Fixed Key
+            
             if(!name) return alert("Please enter a movie name!");
             
             try {
-                const res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${name}`);
+                const res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(name)}`);
                 const data = await res.json();
                 
-                if(data.results.length > 0) {
+                if(data.results && data.results.length > 0) {
                     const movie = data.results[0];
                     const detailRes = await fetch(`https://api.themoviedb.org/3/movie/${movie.id}?api_key=${apiKey}&append_to_response=videos`);
                     const details = await detailRes.json();
@@ -88,19 +74,19 @@
                     document.getElementById('p').value = "https://image.tmdb.org/t/p/w500" + details.poster_path;
                     document.getElementById('s').value = details.overview;
                     
-                    const trailer = details.videos.results.find(v => v.type === 'Trailer');
-                    if(trailer) document.getElementById('yt').value = trailer.key;
+                    const trailer = details.videos.results.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+                    document.getElementById('yt').value = trailer ? trailer.key : "";
 
                     alert("✅ Data Fetched Successfully!");
                 } else {
-                    alert("❌ No movie found with this name.");
+                    alert("❌ Movie not found!");
                 }
-            } catch (err) { alert("Error fetching data!"); }
+            } catch (err) { 
+                alert("Error connecting to TMDB API!"); 
+            }
         }
 
-        // --- FIREBASE LOGIC ---
         function saveMovie() {
-            const key = document.getElementById('editKey').value;
             const data = {
                 title: document.getElementById('t').value,
                 poster: document.getElementById('p').value,
@@ -109,13 +95,8 @@
                 screenshots: document.getElementById('ss').value,
                 trailer: document.getElementById('yt').value
             };
-
-            if(data.title && data.poster) {
-                const ref = key ? db.ref('movies/' + key) : db.ref('movies').push();
-                ref.set(data).then(() => {
-                    alert("✅ Success!");
-                    location.reload();
-                });
+            if(data.title) {
+                db.ref('movies').push(data).then(() => { alert("Success!"); location.reload(); });
             }
         }
 
@@ -123,11 +104,7 @@
             db.ref('movies').on('value', snap => {
                 const list = document.getElementById('list'); list.innerHTML = '';
                 snap.forEach(c => {
-                    list.innerHTML += `
-                        <div class="item">
-                            <span>${c.val().title}</span>
-                            <button class="del-btn" onclick="db.ref('movies/${c.key}').remove()">Del</button>
-                        </div>`;
+                    list.innerHTML += `<div class="item"><span>${c.val().title}</span><button onclick="db.ref('movies/${c.key}').remove()" style="background:red;border:none;color:white;padding:5px;border-radius:4px;">Del</button></div>`;
                 });
             });
         }
