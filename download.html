@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generating Link | FastStream</title>
+    <script>(function(s){s.dataset.zone='10626442',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { font-family: sans-serif; background: #0a0a0b; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; text-align: center; }
+        .box { background: #161618; padding: 30px; border-radius: 15px; border: 1px solid #333; max-width: 400px; width: 90%; }
+        .timer-circle { width: 80px; height: 80px; border: 4px solid #e50914; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: bold; margin: 20px auto; border-top-color: transparent; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .btn { background: #e50914; color: white; padding: 15px 30px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; display: none; text-decoration: none; width: 100%; font-size: 18px; }
+        .ad-box { background: #111; padding: 10px; margin: 15px 0; border: 1px dashed #444; color: #666; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2 id="status">Please Wait...</h2>
+    <div id="timerDisplay" class="timer-circle">10</div>
+    <div class="ad-box">ADVERTISEMENT (DO NOT CLOSE)</div>
+    
+    <button id="getLinkBtn" class="btn" onclick="startFinalStep()">GET LINK</button>
+    
+    <a id="finalDownload" class="btn">LINK GENERATED (HD)</a>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4",
+        authDomain: "movie-project-b78b4.firebaseapp.com",
+        databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com",
+        projectId: "movie-project-b78b4",
+        storageBucket: "movie-project-b78b4.firebasestorage.app",
+        messagingSenderId: "819696212001",
+        appId: "1:819696212001:web:379b19305c6d604b2deb60"
+    };
+    firebase.initializeApp(firebaseConfig);
+    
+    let mainLink = "";
+    const mId = new URLSearchParams(window.location.search).get('id');
+
+    if(mId) {
+        firebase.database().ref('movies/' + mId).once('value').then(snap => {
+            mainLink = snap.val().link;
+        });
+    }
+
+    // --- First Timer (10 Seconds) ---
+    let timeLeft = 10;
+    const timerInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById('timerDisplay').innerText = timeLeft;
+        if(timeLeft <= 0) {
+            clearInterval(timerInterval);
+            document.getElementById('timerDisplay').style.display = "none";
+            document.getElementById('status').innerText = "Link is Ready!";
+            document.getElementById('getLinkBtn').style.display = "block";
+        }
+    }, 1000);
+
+    // --- Second Timer (5 Seconds) ---
+    function startFinalStep() {
+        document.getElementById('getLinkBtn').style.display = "none";
+        document.getElementById('status').innerText = "Finalizing HD Link...";
+        document.getElementById('timerDisplay').style.display = "flex";
+        
+        let finalTime = 5;
+        document.getElementById('timerDisplay').innerText = finalTime;
+        
+        const finalInterval = setInterval(() => {
+            finalTime--;
+            document.getElementById('timerDisplay').innerText = finalTime;
+            if(finalTime <= 0) {
+                clearInterval(finalInterval);
+                document.getElementById('timerDisplay').style.display = "none";
+                document.getElementById('status').innerText = "Link Generated Successfully!";
+                const finalBtn = document.getElementById('finalDownload');
+                finalBtn.style.display = "block";
+                finalBtn.href = mainLink;
+                finalBtn.target = "_blank";
+            }
+        }, 1000);
+    }
+</script>
+
+</body>
+</html>
