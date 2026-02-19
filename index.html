@@ -3,33 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Admin Panel | FastStream</title>
+    <title>FastStream | Premium Movies</title>
+    <script>(function(s){s.dataset.zone='10626442',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        body { font-family: sans-serif; background: #0f1014; color: white; padding: 20px; text-align: center; }
-        .box { background: #1c1d24; padding: 20px; border-radius: 10px; max-width: 500px; margin: auto; border: 1px solid #333; }
-        input, textarea { width: 100%; padding: 12px; margin: 8px 0; background: #2a2b33; border: 1px solid #444; border-radius: 6px; color: white; box-sizing: border-box; }
-        .btn { background: #e50914; color: white; width: 100%; padding: 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .edit-btn { background: #ffa500; color: black; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin-right: 5px; }
-        .item { display: flex; justify-content: space-between; background: #16171d; padding: 10px; margin-top: 5px; border-radius: 5px; font-size: 14px; align-items: center; }
+        :root { --primary: #e50914; --bg: #0a0a0b; --card-bg: #161618; --text: #ffffff; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; overflow-x: hidden; }
+        
+        /* Navbar */
+        header { padding: 15px 20px; background: rgba(0,0,0,0.9); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 2px solid var(--primary); }
+        .logo { font-size: 22px; font-weight: bold; color: var(--primary); text-decoration: none; }
+
+        /* Auto Slider */
+        #slider { width: 100%; height: 220px; overflow: hidden; position: relative; background: #000; }
+        #slideContent { display: flex; transition: 0.8s ease-in-out; height: 100%; }
+        .slide-item { min-width: 100%; position: relative; cursor: pointer; }
+        .slide-item img { width: 100%; height: 100%; object-fit: cover; opacity: 0.6; }
+        .slide-info { position: absolute; bottom: 20px; left: 20px; text-shadow: 2px 2px 5px #000; }
+
+        /* Genre Slider */
+        .genre-container { display: flex; overflow-x: auto; padding: 15px; gap: 12px; white-space: nowrap; scrollbar-width: none; }
+        .genre-container::-webkit-scrollbar { display: none; }
+        .genre-btn { background: #1c1d24; color: white; padding: 10px 22px; border-radius: 25px; border: 1px solid #333; cursor: pointer; transition: 0.3s; }
+        .genre-btn.active { background: var(--primary); border-color: var(--primary); box-shadow: 0 0 10px rgba(229, 9, 20, 0.4); }
+
+        /* Movie Grid */
+        .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; padding: 15px; }
+        .movie-card { background: var(--card-bg); border-radius: 12px; overflow: hidden; border: 1px solid #222; cursor: pointer; transition: 0.3s; position: relative; }
+        .movie-card:hover { transform: translateY(-5px); border-color: var(--primary); }
+        .movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
+        .badge { position: absolute; top: 8px; right: 8px; background: var(--primary); color: white; font-size: 10px; padding: 3px 8px; border-radius: 5px; font-weight: bold; }
+        .info { padding: 10px; text-align: center; }
+        .info h3 { font-size: 13px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        @media (min-width: 768px) { #slider { height: 400px; } .movie-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); } }
     </style>
 </head>
 <body>
-    <div id="main">
-        <div class="box">
-            <h2 id="formTitle">Post New Movie</h2>
-            <input type="hidden" id="editKey"> <input type="text" id="t" placeholder="Movie Title">
-            <input type="text" id="p" placeholder="Poster Image URL">
-            <input type="text" id="l" placeholder="Download Link">
-            <textarea id="s" placeholder="Storyline..."></textarea>
-            <input type="text" id="ss" placeholder="Screenshots (url1, url2)">
-            <input type="text" id="yt" placeholder="YouTube Trailer ID">
-            <button class="btn" id="submitBtn" onclick="saveMovie()">PUBLISH NOW</button>
-            <button class="btn" id="cancelBtn" style="display:none; background:#555; margin-top:5px;" onclick="cancelEdit()">CANCEL EDIT</button>
-            <hr>
-            <h3>Manage Movies</h3>
-            <div id="list">Loading...</div>
-        </div>
+
+    <header>
+        <a href="index.html" class="logo">FASTSTREAM</a>
+        <div class="nav-icons"><i class="fas fa-search" onclick="document.getElementById('searchInput').focus()"></i></div>
+    </header>
+
+    <div id="slider"><div id="slideContent"></div></div>
+
+    <div class="genre-container" id="genres">
+        <div class="genre-btn active" onclick="filterGenre('All', this)">All</div>
+        <div class="genre-btn" onclick="filterGenre('Action', this)">Action</div>
+        <div class="genre-btn" onclick="filterGenre('Drama', this)">Drama</div>
+        <div class="genre-btn" onclick="filterGenre('South', this)">South Indian</div>
+        <div class="genre-btn" onclick="filterGenre('Hindi', this)">Hindi Dubbed</div>
     </div>
+
+    <div style="padding: 0 15px;"><input type="text" id="searchInput" placeholder="Search movies..." onkeyup="searchMovie()" style="width:100%; padding:12px; border-radius:30px; border:1px solid #333; background:var(--card-bg); color:white; outline:none;"></div>
+
+    <div class="movie-grid" id="movieGrid"></div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -46,86 +75,59 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Load Movie List
-        function load() {
-            db.ref('movies').on('value', snap => {
-                const list = document.getElementById('list'); list.innerHTML = '';
-                snap.forEach(c => {
-                    const m = c.val();
-                    list.innerHTML += `
-                        <div class="item">
-                            <span>${m.title}</span>
-                            <div>
-                                <button class="edit-btn" onclick="editMovie('${c.key}')">Edit</button>
-                                <button onclick="db.ref('movies/${c.key}').remove()" style="background:red;border:none;color:white;cursor:pointer;border-radius:3px;padding:5px 10px;">Del</button>
-                            </div>
+        // Load Movies
+        db.ref('movies').on('value', (snap) => {
+            const grid = document.getElementById('movieGrid');
+            const slider = document.getElementById('slideContent');
+            grid.innerHTML = ''; slider.innerHTML = '';
+            let count = 0;
+
+            snap.forEach((child) => {
+                const m = child.val();
+                const mId = child.key;
+
+                // Slider Items (Top 5)
+                if(count < 5) {
+                    slider.innerHTML += `
+                        <div class="slide-item" onclick="location.href='go.html?id=${mId}'">
+                            <img src="${m.poster}">
+                            <div class="slide-info"><h2>${m.title}</h2></div>
                         </div>`;
-                });
+                    count++;
+                }
+
+                // Grid Items
+                grid.innerHTML += `
+                    <div class="movie-card" onclick="location.href='go.html?id=${mId}'">
+                        <div class="badge">${m.quality || 'HD'}</div>
+                        <img src="${m.poster}">
+                        <div class="info"><h3>${m.title}</h3></div>
+                    </div>`;
             });
-        }
-        load();
+        });
 
-        // Save or Update Movie Logic
-        function saveMovie() {
-            const key = document.getElementById('editKey').value;
-            const data = {
-                title: document.getElementById('t').value,
-                poster: document.getElementById('p').value,
-                link: document.getElementById('l').value,
-                story: document.getElementById('s').value,
-                screenshots: document.getElementById('ss').value,
-                trailer: document.getElementById('yt').value
-            };
+        // Auto Slider Logic
+        let slideIdx = 0;
+        setInterval(() => {
+            slideIdx = (slideIdx + 1) % 5;
+            const sc = document.getElementById('slideContent');
+            if(sc) sc.style.transform = `translateX(-${slideIdx * 100}%)`;
+        }, 4000);
 
-            if(key) {
-                // Update Existing Movie
-                db.ref('movies/' + key).set(data).then(() => {
-                    alert("✅ Movie Updated!");
-                    cancelEdit();
-                });
-            } else {
-                // Add New Movie
-                db.ref('movies').push(data).then(() => {
-                    alert("✅ Published!");
-                    clearForm();
-                });
-            }
-        }
-
-        // Fill form with old data for editing
-        function editMovie(key) {
-            db.ref('movies/' + key).once('value', snap => {
-                const m = snap.val();
-                document.getElementById('editKey').value = key;
-                document.getElementById('t').value = m.title;
-                document.getElementById('p').value = m.poster;
-                document.getElementById('l').value = m.link;
-                document.getElementById('s').value = m.story || "";
-                document.getElementById('ss').value = m.screenshots || "";
-                document.getElementById('yt').value = m.trailer || "";
-                
-                document.getElementById('formTitle').innerText = "Edit Movie Mode";
-                document.getElementById('submitBtn').innerText = "UPDATE MOVIE";
-                document.getElementById('cancelBtn').style.display = "block";
-                window.scrollTo(0,0);
+        function filterGenre(genre, btn) {
+            document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const cards = document.querySelectorAll('.movie-card');
+            cards.forEach(c => {
+                c.style.display = (genre === 'All' || c.innerText.includes(genre)) ? "block" : "none";
             });
         }
 
-        function cancelEdit() {
-            document.getElementById('editKey').value = "";
-            clearForm();
-            document.getElementById('formTitle').innerText = "Post New Movie";
-            document.getElementById('submitBtn').innerText = "PUBLISH NOW";
-            document.getElementById('cancelBtn').style.display = "none";
-        }
-
-        function clearForm() {
-            document.getElementById('t').value = "";
-            document.getElementById('p').value = "";
-            document.getElementById('l').value = "";
-            document.getElementById('s').value = "";
-            document.getElementById('ss').value = "";
-            document.getElementById('yt').value = "";
+        function searchMovie() {
+            let input = document.getElementById('searchInput').value.toLowerCase();
+            document.querySelectorAll('.movie-card').forEach(c => {
+                c.style.display = c.innerText.toLowerCase().includes(input) ? "block" : "none";
+            });
         }
     </script>
 </body>
