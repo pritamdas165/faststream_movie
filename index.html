@@ -3,33 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel | FastStream</title>
+    <title>FastStream | Watch Movies</title>
     <style>
-        :root { --primary: #e50914; --bg: #0f1014; --box: #1c1d24; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; padding: 20px; }
-        .box { background: var(--box); padding: 20px; border-radius: 12px; max-width: 500px; margin: auto; border: 1px solid #333; }
-        input, textarea { width: 100%; padding: 12px; margin: 8px 0; background: #2a2b33; border: 1px solid #444; border-radius: 8px; color: white; box-sizing: border-box; }
-        .btn { background: var(--primary); color: white; width: 100%; padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .btn-search { background: #28a745; margin-bottom: 15px; }
+        :root { --primary: #e50914; --bg: #0f1014; --card: #1c1d24; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; padding: 20px; }
+        
+        .header { text-align: center; padding-bottom: 30px; }
+        .header h1 { color: var(--primary); font-size: 32px; margin: 0; }
+
+        /* Movie Grid Layout */
+        .movie-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        /* Movie Card Style */
+        .movie-card {
+            background: var(--card);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: transform 0.3s;
+            border: 1px solid #333;
+            text-decoration: none;
+            color: white;
+        }
+        .movie-card:hover { transform: translateY(-5px); border-color: var(--primary); }
+        
+        .movie-card img {
+            width: 100%;
+            height: 240px;
+            object-fit: cover;
+        }
+        
+        .movie-info { padding: 10px; text-align: center; }
+        .movie-info h3 { font-size: 14px; margin: 5px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .btn-watch {
+            display: block;
+            background: var(--primary);
+            color: white;
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        /* Loading Spinner */
+        #loader { text-align: center; margin-top: 50px; font-size: 18px; color: #888; }
     </style>
 </head>
 <body>
 
-    <div class="box">
-        <h2 style="color: #28a745;">⚡ Auto-Fetch</h2>
-        <input type="text" id="movieSearchInput" placeholder="Enter Movie Name (e.g. Kick)">
-        <button class="btn btn-search" onclick="fetchTMDBData()">SEARCH & FILL DATA</button>
-        <hr style="border: 0.5px solid #333; margin: 20px 0;">
-        <input type="text" id="title" placeholder="Movie Title">
-        <input type="text" id="poster" placeholder="Poster Link">
-        <textarea id="story" placeholder="Storyline..." rows="4"></textarea>
-        <button class="btn" onclick="saveToFirebase()">PUBLISH MOVIE</button>
+    <div class="header">
+        <h1>🎥 FastStream</h1>
+        <p>Latest Movies & Series</p>
     </div>
+
+    <div id="loader">Loading Movies...</div>
+    <div class="movie-grid" id="movieList"></div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    
+
     <script>
+        // Apnar Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4",
             authDomain: "movie-project-b78b4.firebaseapp.com",
@@ -42,48 +83,35 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        async function fetchTMDBData() {
-            const name = document.getElementById('movieSearchInput').value;
-            const apiKey = "cc9374659de08b939499a50af4715216"; // Apnar API Key
+        // Fetching Data from Firebase
+        const movieList = document.getElementById('movieList');
+        const loader = document.getElementById('loader');
+
+        db.ref('movies').on('value', (snapshot) => {
+            movieList.innerHTML = "";
+            loader.style.display = "none";
             
-            if(!name) {
-                alert("Please enter a movie name!");
-                return;
-            }
-
-            try {
-                const response = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(name)}`);
-                const data = await response.json();
-                
-                if(data.results && data.results.length > 0) {
-                    const movie = data.results[0];
-                    document.getElementById('title').value = movie.title + " (" + movie.release_date.split('-')[0] + ")";
-                    document.getElementById('poster').value = "https://image.tmdb.org/t/p/w500" + movie.poster_path;
-                    document.getElementById('story').value = movie.overview;
-                    alert("✅ Data Found & Filled!");
-                } else {
-                    alert("❌ Movie not found!");
-                }
-            } catch (error) {
-                alert("⚠️ Error: " + error.message);
-            }
-        }
-
-        function saveToFirebase() {
-            const data = {
-                title: document.getElementById('title').value,
-                poster: document.getElementById('poster').value,
-                story: document.getElementById('story').value
-            };
-            if(data.title) {
-                db.ref('movies').push(data).then(() => {
-                    alert("✅ Published Successfully!");
-                    location.reload();
+            const data = snapshot.val();
+            if (data) {
+                Object.keys(data).reverse().forEach(key => {
+                    const movie = data[key];
+                    
+                    // Movie Card Creating
+                    const card = `
+                        <a href="${movie.link}" class="movie-card" target="_blank">
+                            <img src="${movie.poster}" onerror="this.src='https://via.placeholder.com/500x750?text=No+Poster'">
+                            <div class="movie-info">
+                                <h3>${movie.title}</h3>
+                                <span class="btn-watch">DOWNLOAD NOW</span>
+                            </div>
+                        </a>
+                    `;
+                    movieList.innerHTML += card;
                 });
             } else {
-                alert("Fill the data first!");
+                movieList.innerHTML = "<p style='text-align:center; width:100%;'>No movies found. Add from Admin Panel!</p>";
             }
-        }
+        });
     </script>
 </body>
 </html>
