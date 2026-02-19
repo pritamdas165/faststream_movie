@@ -3,37 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redirection...</title>
+    <title>Redirecting...</title>
     <script>(function(s){s.dataset.zone='10626442',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
     <style>
-        body { background: #0a0a0b; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .box { background: #161618; padding: 40px; border-radius: 20px; border: 1px solid #e50914; text-align: center; }
-        .timer { font-size: 40px; color: #e50914; margin: 20px 0; font-weight: bold; }
+        body { background: #0a0a0b; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; }
+        .box { background: #161618; padding: 40px; border-radius: 20px; border: 1px solid #e50914; width: 300px; }
+        .timer { font-size: 40px; color: #e50914; font-weight: bold; margin: 20px 0; }
         .btn { display: none; background: #e50914; color: white; padding: 15px 30px; border-radius: 5px; text-decoration: none; font-weight: bold; }
+        .report { margin-top: 20px; color: #555; cursor: pointer; font-size: 12px; }
     </style>
 </head>
 <body>
     <div class="box">
-        <h3>Securing Movie Link...</h3>
-        <div id="t" class="timer">5</div>
-        <a id="btn" class="btn">CONTINUE TO DOWNLOAD</a>
+        <h3>Link Security Check</h3>
+        <div id="timer" class="timer">5</div>
+        <a id="btn" class="btn">CONTINUE TO MOVIE</a>
+        <div class="report" onclick="alert('Report Sent!')">⚠️ Link not working? Report</div>
     </div>
-
     <script>
         const p = new URLSearchParams(window.location.search);
         let url = p.get('url');
         let sec = 5;
-        let timer = setInterval(() => {
-            sec--;
-            document.getElementById('t').innerText = sec;
-            if(sec <= 0) {
-                clearInterval(timer);
-                document.getElementById('t').style.display = 'none';
-                document.getElementById('btn').style.display = 'inline-block';
-            }
+        let t = setInterval(() => {
+            sec--; document.getElementById('timer').innerText = sec;
+            if(sec <= 0) { clearInterval(t); document.getElementById('timer').style.display='none'; document.getElementById('btn').style.display='inline-block'; }
         }, 1000);
-
-        if(url) { document.getElementById('btn').href = atob(decodeURIComponent(url)); }
+        if(url) document.getElementById('btn').href = atob(decodeURIComponent(url));
     </script>
 </body>
 </html>
