@@ -1,18 +1,73 @@
-<div class="dl-container">
-    <a id="mDownload" class="dl-btn">
-        <i class="fas fa-cloud-download-alt"></i> GO TO DOWNLOAD PAGE
-    </a>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch Movie | FastStream</title>
+    <script>(function(s){s.dataset.zone='10626442',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root { --primary: #e50914; --bg: #0a0a0b; --card: #161618; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; padding-bottom: 100px; }
+        .hero { position: relative; width: 100%; height: 250px; overflow: hidden; }
+        .hero img { width: 100%; height: 100%; object-fit: cover; opacity: 0.3; filter: blur(8px); }
+        .hero-overlay { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, var(--bg), transparent); }
+        .container { max-width: 600px; margin: auto; padding: 0 15px; position: relative; margin-top: -120px; }
+        .main-poster { width: 150px; height: 220px; border-radius: 12px; object-fit: cover; border: 2px solid #333; }
+        h1 { font-size: 24px; margin: 20px 0 10px; }
+        .section-title { font-size: 18px; font-weight: bold; margin: 25px 0 12px; border-left: 4px solid var(--primary); padding-left: 12px; }
+        .content-box { background: var(--card); padding: 15px; border-radius: 12px; color: #ddd; border: 1px solid #222; }
+        iframe { width: 100%; height: 210px; border-radius: 12px; background: #000; }
+        .dl-container { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(10,10,11,0.9); padding: 15px; border-top: 1px solid #333; display: flex; justify-content: center; z-index: 1000; }
+        .dl-btn { background: var(--primary); color: white; text-align: center; width: 100%; max-width: 500px; padding: 15px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <div class="hero"><img id="mBanner" src=""><div class="hero-overlay"></div></div>
+    <div class="container">
+        <img id="mPoster" class="main-poster" src="">
+        <h1 id="mTitle">Loading Movie...</h1>
+        <div class="section-title">Storyline</div>
+        <div id="mStory" class="content-box"></div>
+        <div class="section-title">Watch Trailer</div>
+        <div id="mTrailer"></div>
+        <div class="section-title">Screenshots</div>
+        <div id="mScreenshots" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
+    </div>
+    <div class="dl-container">
+        <a id="mDownload" class="dl-btn">GO TO DOWNLOAD PAGE</a>
+    </div>
 
-<script>
-    // ... apnar purono firebase config thakbe ...
-    const mId = new URLSearchParams(window.location.search).get('id');
-    if(mId) {
-        db.ref('movies/' + mId).on('value', (snap) => {
-            const m = snap.val();
-            if(!m) return;
-            // Button-e shudhu redirect link hobe
-            document.getElementById('mDownload').href = `download.html?id=${mId}`;
-        });
-    }
-</script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4",
+            authDomain: "movie-project-b78b4.firebaseapp.com",
+            databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com",
+            projectId: "movie-project-b78b4",
+            storageBucket: "movie-project-b78b4.firebasestorage.app",
+            messagingSenderId: "819696212001",
+            appId: "1:819696212001:web:379b19305c6d604b2deb60"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const mId = new URLSearchParams(window.location.search).get('id');
+        if(mId) {
+            firebase.database().ref('movies/' + mId).on('value', (snap) => {
+                const m = snap.val();
+                if(!m) return;
+                document.getElementById('mTitle').innerText = m.title;
+                document.getElementById('mPoster').src = m.poster;
+                document.getElementById('mBanner').src = m.poster;
+                document.getElementById('mStory').innerText = m.story || "No storyline.";
+                document.getElementById('mDownload').href = `download.html?id=${mId}`;
+                if(m.trailer) {
+                    let ytId = m.trailer.trim();
+                    if(ytId.includes('v=')) ytId = ytId.split('v=')[1].split('&')[0];
+                    document.getElementById('mTrailer').innerHTML = `<iframe src="https://www.youtube.com/embed/${ytId}" frameborder="0" allowfullscreen></iframe>`;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
