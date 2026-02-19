@@ -1,109 +1,40 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Admin Panel | FastStream</title>
-    <style>
-        body { font-family: sans-serif; background: #0f1014; color: white; padding: 20px; }
-        .box { background: #1c1d24; padding: 25px; border-radius: 12px; max-width: 600px; margin: auto; border: 1px solid #333; }
-        input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; background: #2a2b33; border: 1px solid #444; border-radius: 8px; color: white; box-sizing: border-box; }
-        textarea { height: 80px; resize: none; }
-        .btn { background: #e50914; color: white; width: 100%; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 10px; }
-        .movie-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #333; }
-        label { font-size: 12px; color: #888; display: block; text-align: left; margin-top: 5px; }
-    </style>
-</head>
-<body>
+<div id="panel" class="box" style="display:none; max-width: 600px; margin: auto; background: #1c1d24; padding: 20px; border-radius: 10px;">
+    <h2>🎬 Post New Movie (Pro)</h2>
+    
+    <input type="text" id="t" placeholder="Movie Title (e.g. Arjun Reddy)">
+    <input type="text" id="p" placeholder="Main Poster URL">
+    <input type="text" id="l" placeholder="Download Link (Monetag)">
+    
+    <label>Movie Storyline</label>
+    <textarea id="s" style="width:100%; height:80px; background:#2a2b33; color:white; border-radius:8px; padding:10px;" placeholder="Write storyline..."></textarea>
+    
+    <label>Screenshot URLs (Comma separated)</label>
+    <input type="text" id="ss" placeholder="https://img1.jpg, https://img2.jpg">
+    
+    <label>YouTube Trailer ID (Only the ID after v=)</label>
+    <input type="text" id="yt" placeholder="Example: d9MyW72ELq0">
 
-    <div id="loginBox" class="box">
-        <h2>🔒 Admin Access</h2>
-        <input type="password" id="pass" placeholder="Enter Password">
-        <button class="btn" onclick="login()">LOGIN</button>
-    </div>
+    <select id="g">
+        <option value="Action">Action</option>
+        <option value="Drama">Drama</option>
+        <option value="South">South Indian</option>
+        <option value="Hindi">Hindi Dubbed</option>
+    </select>
 
-    <div id="panel" class="box" style="display:none;">
-        <h2>🎬 Post New Movie (Pro)</h2>
-        
-        <label>Basic Info</label>
-        <input type="text" id="t" placeholder="Movie Title (e.g. Arjun Reddy)">
-        <input type="text" id="p" placeholder="Main Poster Image URL">
-        <input type="text" id="l" placeholder="Monetag Direct Link (Download Link)">
-        
-        <label>Movie Storyline</label>
-        <textarea id="s" placeholder="Write a short story about the movie..."></textarea>
-        
-        <label>Screenshots (Paste 2-3 Image URLs separated by commas)</label>
-        <input type="text" id="ss" placeholder="https://img1.jpg, https://img2.jpg">
+    <button class="btn" onclick="add()" style="background:#e50914; color:white; width:100%; padding:15px; border:none; margin-top:10px; cursor:pointer; font-weight:bold;">PUBLISH NOW</button>
+</div>
 
-        <div style="display: flex; gap: 10px;">
-            <select id="q"><option value="HD 720p">HD 720p</option><option value="1080p FHD">1080p FHD</option></select>
-            <select id="g"><option value="Action">Action</option><option value="Drama">Drama</option><option value="South">South Indian</option></select>
-        </div>
+<script>
+    function add() {
+        const t=document.getElementById('t').value, p=document.getElementById('p').value, l=document.getElementById('l').value,
+              s=document.getElementById('s').value, ss=document.getElementById('ss').value, yt=document.getElementById('yt').value,
+              g=document.getElementById('g').value;
 
-        <button class="btn" onclick="add()">PUBLISH NOW</button>
-        <hr style="border: 0.5px solid #333; margin: 30px 0;">
-        <h3>🎥 Manage Uploaded Movies</h3>
-        <div id="list"></div>
-    </div>
-
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4",
-            authDomain: "movie-project-b78b4.firebaseapp.com",
-            databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com",
-            projectId: "movie-project-b78b4",
-            storageBucket: "movie-project-b78b4.firebasestorage.app",
-            messagingSenderId: "819696212001",
-            appId: "1:819696212001:web:379b19305c6d604b2deb60"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        function login() { 
-            if(document.getElementById('pass').value === "admin123") { 
-                document.getElementById('loginBox').style.display='none'; 
-                document.getElementById('panel').style.display='block'; 
-                loadList(); 
-            } else { alert("Wrong Password!"); }
+        if(t && p && l) {
+            db.ref('movies').push({
+                title: t, poster: p, link: l,
+                story: s, screenshots: ss, trailer: yt, genre: g
+            }).then(() => { alert("Success!"); location.reload(); });
         }
-
-        function add() {
-            const t=document.getElementById('t').value, 
-                  p=document.getElementById('p').value, 
-                  l=document.getElementById('l').value,
-                  s=document.getElementById('s').value,
-                  ss=document.getElementById('ss').value,
-                  q=document.getElementById('q').value,
-                  g=document.getElementById('g').value;
-
-            if(t && p && l) {
-                db.ref('movies').push({
-                    title: t + " " + g, 
-                    poster: p, 
-                    link: l,
-                    story: s,
-                    screenshots: ss,
-                    quality: q,
-                    genre: g
-                }).then(() => { 
-                    alert("✅ Movie Published with Details!"); 
-                    location.reload(); 
-                });
-            } else { alert("Please fill Title, Poster, and Link!"); }
-        }
-
-        function loadList() {
-            db.ref('movies').on('value', (snap) => {
-                const div = document.getElementById('list'); div.innerHTML = '';
-                snap.forEach(c => {
-                    div.innerHTML += `<div class="movie-item"><span>${c.val().title}</span><button onclick="del('${c.key}')" style="background:red;color:white;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;">Delete</button></div>`;
-                });
-            });
-        }
-        function del(key) { if(confirm("Delete this movie?")) db.ref('movies').child(key).remove(); }
-    </script>
-</body>
-</html>
+    }
+</script>
