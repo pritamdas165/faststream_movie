@@ -3,177 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FastStream Admin | Fixed Version</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-
+    <title>Movie Admin Panel</title>
     <style>
-        :root { --bg: #0f0f0f; --card: #1a1a1a; --accent: #e50914; --text: #ffffff; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; padding: 0; margin: 0; }
-        header { background: #000; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--accent); }
-        main { max-width: 1200px; margin: 20px auto; padding: 0 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
-        .card { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        h3 { color: var(--accent); margin-top: 0; display: flex; align-items: center; gap: 10px; font-size: 1.1rem; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        input, select, textarea { width: 100%; padding: 12px; margin-top: 8px; background: #252525; border: 1px solid #333; color: white; border-radius: 6px; outline: none; box-sizing: border-box; }
-        .upload-box { border: 2px dashed #444; padding: 15px; text-align: center; border-radius: 8px; margin-top: 10px; cursor: pointer; position: relative; }
-        #preview-img { width: 100px; height: 140px; object-fit: cover; margin-top: 10px; display: none; border-radius: 4px; border: 1px solid #444; }
-        .progress-bar-container { width: 100%; background: #333; height: 6px; border-radius: 10px; margin-top: 10px; display: none; }
-        .progress-bar { width: 0%; height: 100%; background: var(--accent); border-radius: 10px; transition: 0.3s; }
-        .btn { width: 100%; padding: 14px; background: var(--accent); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 15px; }
-        .btn:disabled { background: #555; cursor: not-allowed; }
-        .item-row { background: #222; padding: 12px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; border-radius: 6px; }
-        #auth-screen { height: 100vh; display: flex; align-items: center; justify-content: center; }
+        body { font-family: 'Inter', sans-serif; background: #0a0a0b; color: white; text-align: center; padding: 20px; }
+        .container { max-width: 500px; margin: auto; background: #161618; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        input, button { width: 90%; padding: 12px; margin: 10px 0; border-radius: 5px; border: none; font-size: 16px; }
+        input { background: #222; color: white; border: 1px solid #333; }
+        button { background: #e50914; color: white; font-weight: bold; cursor: pointer; }
+        button:hover { background: #ff0a16; }
+        .status { margin-top: 15px; font-size: 14px; color: #aaa; }
     </style>
 </head>
 <body>
 
-    <div id="auth-screen">
-        <div class="card" style="width: 320px; text-align: center;">
-            <h2>Admin Login</h2>
-            <input type="email" id="email" placeholder="Email">
-            <input type="password" id="pass" placeholder="Password">
-            <button class="btn" onclick="login()">Login</button>
-        </div>
+    <div class="container">
+        <h2>🎬 Add New Movie</h2>
+        <input type="text" id="movieTitle" placeholder="Movie Title (e.g. Pushpa 2)">
+        <input type="text" id="moviePoster" placeholder="Poster Image URL">
+        <input type="text" id="movieLink" placeholder="Movie Download/Watch URL">
+        <button onclick="uploadMovie()">Upload Movie</button>
+        <div class="status" id="statusMsg">Admin Panel is Ready</div>
     </div>
 
-    <div id="admin-panel" style="display:none;">
-        <header>
-            <div style="font-weight:bold;">FASTSTREAM ADMIN</div>
-            <button onclick="firebase.auth().signOut()" style="background:none; border:none; color:white; cursor:pointer;"><i class="fas fa-sign-out-alt"></i></button>
-        </header>
-
-        <main>
-            <div class="col">
-                <div class="card">
-                    <h3><i class="fas fa-plus"></i> Add Movie</h3>
-                    <form id="movie-form">
-                        <label style="font-size:0.8rem;"><input type="checkbox" id="m-trailerOnly"> Trailer Mode</label>
-                        <input type="text" id="m-title" placeholder="Movie Title" required>
-                        
-                        <div class="upload-box" onclick="document.getElementById('m-file').click()">
-                            <i class="fas fa-cloud-upload-alt" style="font-size:1.5rem;"></i>
-                            <p id="up-text">Click to Upload Poster</p>
-                            <div class="progress-bar-container" id="p-container"><div class="progress-bar" id="p-bar"></div></div>
-                            <img id="preview-img">
-                        </div>
-                        <input type="file" id="m-file" accept="image/*" style="display:none;" onchange="uploadImage(this)">
-                        <input type="hidden" id="m-poster-url">
-
-                        <select id="m-genre">
-                            <option>Action</option><option>Comedy</option><option>Drama</option>
-                            <option>Horror</option><option>Sci-Fi</option><option>Animation</option>
-                        </select>
-                        <input type="url" id="m-play" placeholder="Watch Link (playUrl)" required>
-                        <input type="url" id="m-download" placeholder="Download Link (Optional)">
-                        <textarea id="m-desc" placeholder="Description..." rows="2"></textarea>
-                        <button type="submit" class="btn" id="sub-btn">Publish Movie</button>
-                    </form>
-                </div>
-            </div>
-
-            <div class="col">
-                <div class="card">
-                    <h3><i class="fas fa-envelope"></i> User Requests</h3>
-                    <div id="req-list"></div>
-                </div>
-                <div class="card">
-                    <h3><i class="fas fa-film"></i> Movie Library</h3>
-                    <div id="movie-list"></div>
-                </div>
-            </div>
-        </main>
-    </div>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <script>
-        const firebaseConfig = { 
-            apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", 
-            authDomain: "movie-project-b78b4.firebaseapp.com", 
-            databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com", 
-            projectId: "movie-project-b78b4", 
-            storageBucket: "movie-project-b78b4.appspot.com", 
-            messagingSenderId: "819696212001", 
-            appId: "1:819696212001:web:379b19305c6d604b2deb60" 
-        };
+        // FIXME: Ekhane apnar Firebase Config bishat hobe (Ami pore dekhiye dichhi)
+        const firebaseConfig = {
+  apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4",
+  authDomain: "movie-project-b78b4.firebaseapp.com",
+  databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com",
+  projectId: "movie-project-b78b4",
+  storageBucket: "movie-project-b78b4.firebasestorage.app",
+  messagingSenderId: "819696212001",
+  appId: "1:819696212001:web:379b19305c6d604b2deb60"
+}; 
+  firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth(), db = firebase.database(), storage = firebase.storage();
+        function uploadMovie() {
+            const title = document.getElementById('movieTitle').value;
+            const poster = document.getElementById('moviePoster').value;
+            const link = document.getElementById('movieLink').value;
+            const status = document.getElementById('statusMsg');
 
-        function login() { auth.signInWithEmailAndPassword(document.getElementById('email').value, document.getElementById('pass').value).catch(e => alert(e.message)); }
-
-        auth.onAuthStateChanged(user => {
-            if(user) {
-                document.getElementById('auth-screen').style.display='none';
-                document.getElementById('admin-panel').style.display='block';
-                loadAllData();
+            if (title && poster && link) {
+                const movieData = {
+                    title: title,
+                    poster: poster,
+                    link: link,
+                    timestamp: Date.now()
+                };
+                
+                database.ref('movies').push(movieData)
+                    .then(() => {
+                        status.innerText = "✅ Movie Uploaded Successfully!";
+                        document.getElementById('movieTitle').value = '';
+                        document.getElementById('moviePoster').value = '';
+                        document.getElementById('movieLink').value = '';
+                    })
+                    .catch((error) => {
+                        status.innerText = "❌ Error: " + error.message;
+                    });
             } else {
-                document.getElementById('auth-screen').style.display='flex';
-                document.getElementById('admin-panel').style.display='none';
+                status.innerText = "⚠️ Please fill all fields!";
             }
-        });
-
-        function uploadImage(el) {
-            const file = el.files[0];
-            if(!file) return;
-
-            const ref = storage.ref('posters/' + Date.now() + "_" + file.name);
-            const task = ref.put(file);
-
-            document.getElementById('p-container').style.display = 'block';
-            document.getElementById('sub-btn').disabled = true;
-            document.getElementById('up-text').innerText = "Uploading...";
-
-            task.on('state_changed', 
-                s => document.getElementById('p-bar').style.width = (s.bytesTransferred/s.totalBytes)*100 + "%",
-                e => { alert("Upload error: " + e.message); document.getElementById('sub-btn').disabled = false; },
-                () => task.snapshot.ref.getDownloadURL().then(url => {
-                    document.getElementById('m-poster-url').value = url;
-                    const preview = document.getElementById('preview-img');
-                    preview.src = url;
-                    preview.style.display = 'inline-block';
-                    document.getElementById('up-text').innerText = "Upload Complete!";
-                    document.getElementById('sub-btn').disabled = false;
-                })
-            );
         }
-
-        document.getElementById('movie-form').onsubmit = (e) => {
-            e.preventDefault();
-            const poster = document.getElementById('m-poster-url').value;
-            if(!poster) return alert("Please upload a poster first!");
-
-            db.ref('movies').push({
-                title: document.getElementById('m-title').value,
-                genre: document.getElementById('m-genre').value,
-                poster: poster,
-                playUrl: document.getElementById('m-play').value,
-                downloadUrl: document.getElementById('m-download').value || "",
-                description: document.getElementById('m-desc').value,
-                trailerOnly: document.getElementById('m-trailerOnly').checked
-            }).then(() => { alert("Movie Added!"); location.reload(); });
-        };
-
-        function loadAllData() {
-            db.ref('movies').on('value', snap => {
-                const data = snap.val();
-                document.getElementById('movie-list').innerHTML = data ? Object.keys(data).map(id => `
-                    <div class="item-row"><span>${data[id].title}</span><i class="fas fa-trash" onclick="del('movies/${id}')"></i></div>
-                `).join('') : 'Empty';
-            });
-
-            db.ref('requests').on('value', snap => {
-                const data = snap.val();
-                document.getElementById('req-list').innerHTML = data ? Object.keys(data).map(id => `
-                    <div class="item-row"><span>${data[id].name}</span><i class="fas fa-check" onclick="del('requests/${id}')"></i></div>
-                `).join('') : 'No requests';
-            });
-        }
-
-        function del(path) { if(confirm("Confirm Delete?")) db.ref(path).remove(); }
     </script>
 </body>
 </html>
