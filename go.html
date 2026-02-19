@@ -1,169 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Watch Movie | FastStream</title>
-    
-    <script>(function(s){s.dataset.zone='10626442',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+<div class="dl-container">
+    <a id="mDownload" class="dl-btn">
+        <i class="fas fa-cloud-download-alt"></i> GO TO DOWNLOAD PAGE
+    </a>
+</div>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        :root { --primary: #e50914; --bg: #0a0a0b; --card: #161618; --text-dim: #b3b3b3; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; padding-bottom: 120px; }
-        
-        /* Premium Background Banner */
-        .hero { position: relative; width: 100%; height: 260px; overflow: hidden; }
-        .hero img { width: 100%; height: 100%; object-fit: cover; opacity: 0.3; filter: blur(8px); }
-        .hero-overlay { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, var(--bg), transparent); }
-        
-        .container { max-width: 600px; margin: auto; padding: 0 15px; position: relative; margin-top: -130px; }
-        .main-poster { width: 155px; height: 225px; border-radius: 12px; object-fit: cover; box-shadow: 0 15px 35px rgba(0,0,0,0.9); border: 2px solid #333; }
-        
-        h1 { font-size: 24px; margin: 20px 0 10px; color: white; font-weight: bold; }
-        .meta-info { display: flex; gap: 10px; font-size: 12px; color: var(--text-dim); margin-bottom: 20px; }
-        .meta-info span { background: #222; padding: 4px 12px; border-radius: 6px; border: 1px solid #333; }
-
-        .section-title { font-size: 18px; font-weight: bold; margin: 25px 0 12px; border-left: 4px solid var(--primary); padding-left: 12px; }
-        .content-box { background: var(--card); padding: 18px; border-radius: 12px; color: #ddd; line-height: 1.7; border: 1px solid #222; font-size: 15px; }
-        
-        iframe { width: 100%; height: 215px; border-radius: 12px; border: 1px solid #333; background: #000; margin-top: 5px; }
-        
-        .ad-area { width: 100%; text-align: center; margin: 20px 0; background: #111; padding: 12px; border-radius: 10px; font-size: 12px; color: #444; border: 1px dashed #333; }
-
-        .ss-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .ss-grid img { width: 100%; border-radius: 10px; border: 1px solid #333; }
-
-        /* Floating Sticky Download Bar */
-        .dl-container { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(10,10,11,0.95); padding: 15px; box-sizing: border-box; backdrop-filter: blur(15px); border-top: 1px solid #333; display: flex; flex-direction: column; align-items: center; z-index: 1000; }
-        .dl-btn { background: var(--primary); color: white; text-align: center; width: 100%; max-width: 500px; padding: 16px; border-radius: 12px; text-decoration: none; font-weight: bold; font-size: 18px; display: flex; align-items: center; justify-content: center; gap: 12px; cursor: pointer; border: none; outline: none; transition: 0.3s; }
-        .dl-btn.waiting { background: #555; cursor: not-allowed; opacity: 0.8; }
-        
-        /* Timer Text Style */
-        #timerText { font-size: 14px; color: #aaa; margin-bottom: 8px; font-weight: normal; }
-    </style>
-</head>
-<body>
-
-    <div class="hero">
-        <img id="mBanner" src="">
-        <div class="hero-overlay"></div>
-    </div>
-
-    <div class="container">
-        <img id="mPoster" class="main-poster" src="">
-        <h1 id="mTitle">Loading...</h1>
-
-        <div class="meta-info">
-            <span id="mGenre">Genre</span>
-            <span id="mQuality">Quality</span>
-        </div>
-
-        <div class="ad-area">ADVERTISEMENT (Loading...)</div>
-
-        <div class="section-title">Storyline</div>
-        <div id="mStory" class="content-box">Wait...</div>
-
-        <div class="section-title">Watch Official Trailer</div>
-        <div id="mTrailer"></div>
-
-        <div class="ad-area">SPONSORED LINKS</div>
-
-        <div class="section-title">Screenshots</div>
-        <div id="mScreenshots" class="ss-grid"></div>
-    </div>
-
-    <div class="dl-container">
-        <div id="timerText" style="display: none;">Please wait <span id="seconds">10</span> seconds...</div>
-        <button id="mDownloadBtn" class="dl-btn" onclick="startDownloadTimer()">
-            <i class="fas fa-cloud-download-alt"></i> DOWNLOAD MOVIE
-        </button>
-    </div>
-
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4",
-            authDomain: "movie-project-b78b4.firebaseapp.com",
-            databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com",
-            projectId: "movie-project-b78b4",
-            storageBucket: "movie-project-b78b4.firebasestorage.app",
-            messagingSenderId: "819696212001",
-            appId: "1:819696212001:web:379b19305c6d604b2deb60"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        const mId = new URLSearchParams(window.location.search).get('id');
-        let downloadLink = ""; 
-
-        if(mId) {
-            db.ref('movies/' + mId).on('value', (snap) => {
-                const m = snap.val();
-                if(!m) return;
-                
-                document.getElementById('mTitle').innerText = m.title;
-                document.getElementById('mPoster').src = m.poster;
-                document.getElementById('mBanner').src = m.poster;
-                document.getElementById('mStory').innerText = m.story || "No storyline added.";
-                document.getElementById('mGenre').innerText = m.genre || "Action";
-                document.getElementById('mQuality').innerText = m.quality || "HD Quality";
-                downloadLink = m.link;
-
-                if(m.trailer) {
-                    let ytId = m.trailer.trim();
-                    if(ytId.includes('v=')) ytId = ytId.split('v=')[1].split('&')[0];
-                    else if(ytId.includes('youtu.be/')) ytId = ytId.split('/').pop().split('?')[0];
-                    document.getElementById('mTrailer').innerHTML = `<iframe src="https://www.youtube.com/embed/${ytId}" frameborder="0" allowfullscreen></iframe>`;
-                }
-
-                if(m.screenshots) {
-                    const ss = m.screenshots.split(',');
-                    const grid = document.getElementById('mScreenshots');
-                    grid.innerHTML = '';
-                    ss.forEach(url => {
-                        if(url.trim()) grid.innerHTML += `<img src="${url.trim()}">`;
-                    });
-                }
-            });
-        }
-
-        // ✅ Timer Logic for Ads & Revenue
-        function startDownloadTimer() {
-            if(!downloadLink) return alert("Link is loading...");
-
-            const btn = document.getElementById('mDownloadBtn');
-            const timerTxt = document.getElementById('timerText');
-            const secSpan = document.getElementById('seconds');
-            let timeLeft = 10;
-
-            // Step 1: Disable button and show timer
-            btn.onclick = null; // Disable click
-            btn.classList.add('waiting');
-            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> GENERATING LINK...`;
-            timerTxt.style.display = "block";
-
-            // Step 2: Countdown
-            const timer = setInterval(() => {
-                timeLeft--;
-                secSpan.innerText = timeLeft;
-
-                if(timeLeft <= 0) {
-                    clearInterval(timer);
-                    // Step 3: Finalize Button
-                    timerTxt.style.display = "none";
-                    btn.classList.remove('waiting');
-                    btn.style.background = "#28a745"; // Green success color
-                    btn.innerHTML = `<i class="fas fa-check-circle"></i> GET DOWNLOAD LINK`;
-                    
-                    btn.onclick = function() {
-                        window.open(downloadLink, '_blank');
-                    };
-                }
-            }, 1000);
-        }
-    </script>
-</body>
-</html>
+<script>
+    // ... apnar purono firebase config thakbe ...
+    const mId = new URLSearchParams(window.location.search).get('id');
+    if(mId) {
+        db.ref('movies/' + mId).on('value', (snap) => {
+            const m = snap.val();
+            if(!m) return;
+            // Button-e shudhu redirect link hobe
+            document.getElementById('mDownload').href = `download.html?id=${mId}`;
+        });
+    }
+</script>
