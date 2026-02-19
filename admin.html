@@ -3,32 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Admin Panel | FastStream</title>
+    <title>TMDB Auto-Admin | FastStream</title>
     <style>
-        body { font-family: sans-serif; background: #0f1014; color: white; padding: 20px; text-align: center; }
-        .box { background: #1c1d24; padding: 20px; border-radius: 10px; max-width: 500px; margin: auto; border: 1px solid #333; }
-        input, textarea { width: 100%; padding: 12px; margin: 8px 0; background: #2a2b33; border: 1px solid #444; border-radius: 6px; color: white; box-sizing: border-box; }
-        .btn { background: #e50914; color: white; width: 100%; padding: 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .edit-btn { background: #ffa500; color: black; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin-right: 5px; }
-        .item { display: flex; justify-content: space-between; background: #16171d; padding: 10px; margin-top: 5px; border-radius: 5px; font-size: 14px; align-items: center; }
+        :root { --primary: #e50914; --bg: #0f1014; --box: #1c1d24; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; padding: 20px; margin: 0; }
+        .box { background: var(--box); padding: 20px; border-radius: 12px; max-width: 600px; margin: 15px auto; border: 1px solid #333; }
+        input, textarea, select { width: 100%; padding: 12px; margin: 8px 0; background: #2a2b33; border: 1px solid #444; border-radius: 8px; color: white; box-sizing: border-box; outline: none; }
+        .btn { background: var(--primary); color: white; width: 100%; padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-search { background: #28a745; margin-bottom: 10px; }
+        .item { display: flex; justify-content: space-between; background: #16171d; padding: 12px; margin-top: 8px; border-radius: 6px; align-items: center; border-left: 3px solid var(--primary); }
+        .del-btn { background: #ff4d4d; border: none; color: white; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div id="main">
-        <div class="box">
-            <h2 id="formTitle">Post New Movie</h2>
-            <input type="hidden" id="editKey"> <input type="text" id="t" placeholder="Movie Title">
-            <input type="text" id="p" placeholder="Poster Image URL">
-            <input type="text" id="l" placeholder="Download Link">
-            <textarea id="s" placeholder="Storyline..."></textarea>
-            <input type="text" id="ss" placeholder="Screenshots (url1, url2)">
-            <input type="text" id="yt" placeholder="YouTube Trailer ID">
-            <button class="btn" id="submitBtn" onclick="saveMovie()">PUBLISH NOW</button>
-            <button class="btn" id="cancelBtn" style="display:none; background:#555; margin-top:5px;" onclick="cancelEdit()">CANCEL EDIT</button>
-            <hr>
-            <h3>Manage Movies</h3>
-            <div id="list">Loading...</div>
-        </div>
+
+    <div class="box">
+        <h2 style="color: #28a745;">⚡ Quick Auto-Fetch</h2>
+        <p style="font-size: 12px; color: #888;">Enter Movie Name and click Search to autofill data.</p>
+        <input type="text" id="searchName" placeholder="Enter Movie Name (e.g. Arjun Reddy)">
+        <button class="btn btn-search" onclick="fetchMovie()">SEARCH & FILL DATA</button>
+    </div>
+
+    <div class="box">
+        <h2 id="formTitle">Movie Details</h2>
+        <input type="hidden" id="editKey">
+        
+        <label>Title</label>
+        <input type="text" id="t" placeholder="Movie Title">
+        
+        <label>Poster URL</label>
+        <input type="text" id="p" placeholder="Poster Link">
+        
+        <label>Download Link (Monetag)</label>
+        <input type="text" id="l" placeholder="Paste Download Link">
+        
+        <label>Storyline</label>
+        <textarea id="s" placeholder="Storyline..."></textarea>
+        
+        <label>Screenshots (Comma separated)</label>
+        <input type="text" id="ss" placeholder="url1.jpg, url2.jpg">
+        
+        <label>YouTube Trailer ID</label>
+        <input type="text" id="yt" placeholder="Trailer ID Only">
+
+        <button class="btn" id="submitBtn" onclick="saveMovie()">PUBLISH MOVIE</button>
+    </div>
+
+    <div class="box">
+        <h3>🎥 Manage Movies</h3>
+        <div id="list">Loading...</div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -46,26 +69,36 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Load Movie List
-        function load() {
-            db.ref('movies').on('value', snap => {
-                const list = document.getElementById('list'); list.innerHTML = '';
-                snap.forEach(c => {
-                    const m = c.val();
-                    list.innerHTML += `
-                        <div class="item">
-                            <span>${m.title}</span>
-                            <div>
-                                <button class="edit-btn" onclick="editMovie('${c.key}')">Edit</button>
-                                <button onclick="db.ref('movies/${c.key}').remove()" style="background:red;border:none;color:white;cursor:pointer;border-radius:3px;padding:5px 10px;">Del</button>
-                            </div>
-                        </div>`;
-                });
-            });
-        }
-        load();
+        // --- TMDB API LOGIC ---
+        async function fetchMovie() {
+            const name = document.getElementById('searchName').value;
+            const apiKey = "cc9374659de08b939499a50af4715216";
+            if(!name) return alert("Please enter a movie name!");
+            
+            try {
+                const res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${name}`);
+                const data = await res.json();
+                
+                if(data.results.length > 0) {
+                    const movie = data.results[0];
+                    const detailRes = await fetch(`https://api.themoviedb.org/3/movie/${movie.id}?api_key=${apiKey}&append_to_response=videos`);
+                    const details = await detailRes.json();
 
-        // Save or Update Movie Logic
+                    document.getElementById('t').value = details.title + " (" + details.release_date.split('-')[0] + ")";
+                    document.getElementById('p').value = "https://image.tmdb.org/t/p/w500" + details.poster_path;
+                    document.getElementById('s').value = details.overview;
+                    
+                    const trailer = details.videos.results.find(v => v.type === 'Trailer');
+                    if(trailer) document.getElementById('yt').value = trailer.key;
+
+                    alert("✅ Data Fetched Successfully!");
+                } else {
+                    alert("❌ No movie found with this name.");
+                }
+            } catch (err) { alert("Error fetching data!"); }
+        }
+
+        // --- FIREBASE LOGIC ---
         function saveMovie() {
             const key = document.getElementById('editKey').value;
             const data = {
@@ -77,56 +110,28 @@
                 trailer: document.getElementById('yt').value
             };
 
-            if(key) {
-                // Update Existing Movie
-                db.ref('movies/' + key).set(data).then(() => {
-                    alert("✅ Movie Updated!");
-                    cancelEdit();
-                });
-            } else {
-                // Add New Movie
-                db.ref('movies').push(data).then(() => {
-                    alert("✅ Published!");
-                    clearForm();
+            if(data.title && data.poster) {
+                const ref = key ? db.ref('movies/' + key) : db.ref('movies').push();
+                ref.set(data).then(() => {
+                    alert("✅ Success!");
+                    location.reload();
                 });
             }
         }
 
-        // Fill form with old data for editing
-        function editMovie(key) {
-            db.ref('movies/' + key).once('value', snap => {
-                const m = snap.val();
-                document.getElementById('editKey').value = key;
-                document.getElementById('t').value = m.title;
-                document.getElementById('p').value = m.poster;
-                document.getElementById('l').value = m.link;
-                document.getElementById('s').value = m.story || "";
-                document.getElementById('ss').value = m.screenshots || "";
-                document.getElementById('yt').value = m.trailer || "";
-                
-                document.getElementById('formTitle').innerText = "Edit Movie Mode";
-                document.getElementById('submitBtn').innerText = "UPDATE MOVIE";
-                document.getElementById('cancelBtn').style.display = "block";
-                window.scrollTo(0,0);
+        function load() {
+            db.ref('movies').on('value', snap => {
+                const list = document.getElementById('list'); list.innerHTML = '';
+                snap.forEach(c => {
+                    list.innerHTML += `
+                        <div class="item">
+                            <span>${c.val().title}</span>
+                            <button class="del-btn" onclick="db.ref('movies/${c.key}').remove()">Del</button>
+                        </div>`;
+                });
             });
         }
-
-        function cancelEdit() {
-            document.getElementById('editKey').value = "";
-            clearForm();
-            document.getElementById('formTitle').innerText = "Post New Movie";
-            document.getElementById('submitBtn').innerText = "PUBLISH NOW";
-            document.getElementById('cancelBtn').style.display = "none";
-        }
-
-        function clearForm() {
-            document.getElementById('t').value = "";
-            document.getElementById('p').value = "";
-            document.getElementById('l').value = "";
-            document.getElementById('s').value = "";
-            document.getElementById('ss').value = "";
-            document.getElementById('yt').value = "";
-        }
+        load();
     </script>
 </body>
 </html>
