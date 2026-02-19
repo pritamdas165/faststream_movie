@@ -3,91 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FastStream | Watch Movies Online</title>
+    <title>FastStream | Premium Movies</title>
     <script>(function(s){s.dataset.zone='10626442',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        :root { --primary: #e50914; --bg: #0a0a0b; --card-bg: #161618; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; padding: 0; }
-        
-        /* Header & Search */
-        header { padding: 20px; background: rgba(0,0,0,0.8); display: flex; flex-direction: column; align-items: center; gap: 15px; position: sticky; top: 0; z-index: 100; }
-        .logo { font-size: 24px; font-weight: bold; color: var(--primary); }
-        .search-box { width: 90%; max-width: 600px; position: relative; }
-        .search-box input { width: 100%; padding: 12px 40px; border-radius: 25px; border: none; background: #222; color: white; font-size: 16px; box-sizing: border-box; }
-        .search-box i { position: absolute; left: 15px; top: 15px; color: #888; }
-
-        /* Movie Grid */
-        .movie-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; padding: 20px; }
-        .movie-card { background: var(--card-bg); border-radius: 10px; overflow: hidden; transition: 0.3s; cursor: pointer; position: relative; border: 1px solid #222; }
-        .movie-card:hover { transform: translateY(-5px); border-color: var(--primary); }
+        :root { --primary: #e50914; --bg: #0a0a0b; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; }
+        header { padding: 15px; text-align: center; background: #000; border-bottom: 2px solid var(--primary); position: sticky; top: 0; z-index: 100; }
+        .movie-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; padding: 15px; justify-content: center; }
+        .movie-card { background: #161618; border-radius: 8px; overflow: hidden; position: relative; transition: 0.3s; border: 1px solid #222; }
+        .movie-card:hover { transform: scale(1.05); border-color: var(--primary); }
         .movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
-        .movie-info { padding: 10px; text-align: center; }
-        .movie-info h3 { font-size: 14px; margin: 5px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        
-        /* Responsive for Tablet/Desktop */
-        @media (min-width: 768px) {
-            .movie-container { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 25px; }
-            .movie-info h3 { font-size: 16px; }
-        }
+        .badge { position: absolute; top: 5px; right: 5px; background: var(--primary); color: #fff; font-size: 10px; padding: 3px 6px; border-radius: 4px; font-weight: bold; z-index: 5; }
+        .movie-info { padding: 8px; text-align: center; }
+        .movie-info h3 { font-size: 12px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        @media (min-width: 768px) { .movie-container { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); } }
     </style>
 </head>
 <body>
-
-    <header>
-        <div class="logo">FASTSTREAM</div>
-        <div class="search-box">
-            <i class="fas fa-search"></i>
-            <input type="text" id="searchInput" placeholder="Search movies..." onkeyup="searchMovie()">
-        </div>
-    </header>
-
-    <div class="movie-container" id="movieGrid">
-        </div>
+    <header><h2 style="margin:0; color:var(--primary);">FASTSTREAM</h2></header>
+    <div class="movie-container" id="movieGrid"></div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-
     <script>
-        // Use your Firebase Config
         const firebaseConfig = {
-  apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4",
-  authDomain: "movie-project-b78b4.firebaseapp.com",
-  databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com",
-  projectId: "movie-project-b78b4",
-  storageBucket: "movie-project-b78b4.firebasestorage.app",
-  messagingSenderId: "819696212001",
-  appId: "1:819696212001:web:379b19305c6d604b2deb60"
-};
-  firebase.initializeApp(firebaseConfig);
+            apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4",
+            authDomain: "movie-project-b78b4.firebaseapp.com",
+            databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com",
+            projectId: "movie-project-b78b4",
+            storageBucket: "movie-project-b78b4.firebasestorage.app",
+            messagingSenderId: "819696212001",
+            appId: "1:819696212001:web:379b19305c6d604b2deb60"
+        };
+        firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // Load Movies
         database.ref('movies').on('value', (snapshot) => {
             const grid = document.getElementById('movieGrid');
             grid.innerHTML = '';
-            snapshot.forEach((childSnapshot) => {
-                const movie = childSnapshot.val();
-                const card = `
-                    <div class="movie-card" onclick="location.href='go.html?url=${btoa(movie.link)}'">
-                        <img src="${movie.poster}" alt="${movie.title}">
-                        <div class="movie-info">
-                            <h3>${movie.title}</h3>
-                        </div>
-                    </div>
-                `;
-                grid.innerHTML += card;
+            snapshot.forEach((child) => {
+                const m = child.val();
+                grid.innerHTML += `
+                    <div class="movie-card" onclick="location.href='go.html?url=${btoa(m.link)}'">
+                        <div class="badge">${m.quality || 'HD'}</div>
+                        <img src="${m.poster}" alt="${m.title}">
+                        <div class="movie-info"><h3>${m.title}</h3></div>
+                    </div>`;
             });
         });
-
-        function searchMovie() {
-            let input = document.getElementById('searchInput').value.toLowerCase();
-            let cards = document.getElementsByClassName('movie-card');
-            for (let card of cards) {
-                let title = card.innerText.toLowerCase();
-                card.style.display = title.includes(input) ? "block" : "none";
-            }
-        }
     </script>
 </body>
 </html>
