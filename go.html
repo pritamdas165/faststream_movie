@@ -3,31 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FastStream | Secure Link</title>
+    <title>Redirection...</title>
     <script>(function(s){s.dataset.zone='10626442',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
     <style>
-        body { background: #0a0a0b; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; }
-        .box { background: #161618; padding: 30px; border-radius: 15px; border: 1px solid #e50914; max-width: 300px; }
-        .btn { background: #e50914; color: white; padding: 15px 25px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-block; margin-top: 20px; }
+        body { background: #0a0a0b; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .box { background: #161618; padding: 40px; border-radius: 20px; border: 1px solid #e50914; text-align: center; }
+        .timer { font-size: 40px; color: #e50914; margin: 20px 0; font-weight: bold; }
+        .btn { display: none; background: #e50914; color: white; padding: 15px 30px; border-radius: 5px; text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="box">
-        <h3>Link is Ready!</h3>
-        <p>Click below to continue to your movie.</p>
-        <a id="finalLink" class="btn">CONTINUE TO MOVIE</a>
+        <h3>Securing Movie Link...</h3>
+        <div id="t" class="timer">5</div>
+        <a id="btn" class="btn">CONTINUE TO DOWNLOAD</a>
     </div>
 
     <script>
-        // URL theke real link-ti ber kora
-        const urlParams = new URLSearchParams(window.location.search);
-        const encodedUrl = urlParams.get('url');
-        if (encodedUrl) {
-            const finalUrl = atob(encodedUrl); // Base64 decode
-            document.getElementById('finalLink').href = finalUrl;
-        } else {
-            document.getElementById('finalLink').innerText = "Link Expired";
-        }
+        const p = new URLSearchParams(window.location.search);
+        let url = p.get('url');
+        let sec = 5;
+        let timer = setInterval(() => {
+            sec--;
+            document.getElementById('t').innerText = sec;
+            if(sec <= 0) {
+                clearInterval(timer);
+                document.getElementById('t').style.display = 'none';
+                document.getElementById('btn').style.display = 'inline-block';
+            }
+        }, 1000);
+
+        if(url) { document.getElementById('btn').href = atob(decodeURIComponent(url)); }
     </script>
 </body>
 </html>
