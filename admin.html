@@ -1,100 +1,164 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FastStream Admin Fix</title>
-    <style>
-        :root { --primary: #e50914; --bg: #0f1014; --box: #1c1d24; }
-        body { font-family: sans-serif; background: var(--bg); color: white; padding: 20px; }
-        .box { background: var(--box); padding: 20px; border-radius: 12px; max-width: 480px; margin: auto; border: 1px solid #333; }
-        input, textarea { width: 100%; padding: 12px; margin: 8px 0; background: #2a2b33; border: 1px solid #444; border-radius: 8px; color: white; box-sizing: border-box; }
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .btn-search { background: #28a745; color: white; margin-bottom: 15px; }
-        .btn-save { background: var(--primary); color: white; margin-top: 10px; }
-    </style>
+<meta charset="UTF-8">
+<title>Movie Admin Panel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Firebase v9 compat -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+<style>
+body {
+    background:#0f0f0f;
+    color:#fff;
+    font-family:Arial, sans-serif;
+    margin:0;
+    padding:20px;
+}
+.container {
+    max-width:600px;
+    margin:auto;
+    background:#1a1a1a;
+    padding:20px;
+    border-radius:10px;
+}
+h2 { text-align:center; color:#e50914; }
+
+input, textarea, button {
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border-radius:6px;
+    border:none;
+    outline:none;
+}
+input, textarea { background:#2a2a2a; color:#fff; }
+button {
+    background:#e50914;
+    color:#fff;
+    font-weight:bold;
+    cursor:pointer;
+}
+button:hover { opacity:0.9; }
+
+img {
+    width:150px;
+    margin-top:10px;
+    border-radius:6px;
+    display:none;
+}
+</style>
 </head>
+
 <body>
 
-    <div class="box">
-        <h2 style="color:#28a745">⚡ Quick Search</h2>
-        <input type="text" id="movieSearchInput" placeholder="Enter Movie Name (e.g. Kick)">
-        <button class="btn btn-search" onclick="fetchTMDBData()">SEARCH & FILL DATA</button>
-        <hr style="border:0.5px solid #444; margin: 20px 0;">
-        <input type="text" id="title" placeholder="Movie Title">
-        <input type="text" id="poster" placeholder="Poster Link">
-        <input type="text" id="link" placeholder="Download Link">
-        <textarea id="story" rows="4" placeholder="Storyline..."></textarea>
-        <input type="text" id="yt" placeholder="Trailer ID">
-        <button class="btn btn-save" onclick="saveToFirebase()">PUBLISH MOVIE</button>
-    </div>
+<div class="container">
+<h2>Movie Admin Panel</h2>
 
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4",
-            authDomain: "movie-project-b78b4.firebaseapp.com",
-            databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com",
-            projectId: "movie-project-b78b4",
-            storageBucket: "movie-project-b78b4.firebasestorage.app",
-            messagingSenderId: "819696212001",
-            appId: "1:819696212001:web:379b19305c6d604b2deb60"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+<!-- TMDB SEARCH -->
+<input id="movieSearchInput" placeholder="Search movie name">
+<button onclick="fetchMovie()">Fetch from TMDB</button>
 
-        async function fetchTMDBData() {
-            const name = document.getElementById('movieSearchInput').value;
-            const apiKey = "cc9374659de08b939499a50af4715216"; // Fixed API Key
-            
-            if(!name) { alert("Please enter a movie name!"); return; }
+<hr style="margin:20px 0; border-color:#333;">
 
-            try {
-                // Movie Search call
-                const searchRes = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(name)}`);
-                const searchData = await searchRes.json();
-                
-                if(searchData.results && searchData.results.length > 0) {
-                    const movie = searchData.results[0];
-                    
-                    // Detail fetch for Trailer & Full Story
-                    const detailRes = await fetch(`https://api.themoviedb.org/3/movie/${movie.id}?api_key=${apiKey}&append_to_response=videos`);
-                    const details = await detailRes.json();
+<!-- AUTO FILLED FIELDS -->
+<input id="title" placeholder="Movie Title">
+<input id="poster" placeholder="Poster URL">
+<img id="posterPreview">
 
-                    document.getElementById('title').value = details.title + " (" + details.release_date.split('-')[0] + ")";
-                    document.getElementById('poster').value = "https://image.tmdb.org/t/p/w500" + details.poster_path;
-                    document.getElementById('story').value = details.overview;
+<textarea id="story" rows="4" placeholder="Storyline"></textarea>
 
-                    const trailer = details.videos.results.find(v => v.type === 'Trailer' && v.site === 'YouTube');
-                    if(trailer) document.getElementById('yt').value = trailer.key;
+<input id="download" placeholder="Download Link">
+<input id="trailer" placeholder="YouTube Trailer ID">
 
-                    alert("✅ Success: Movie Data Fetched!");
-                } else {
-                    alert("❌ No Movie Found!");
-                }
-            } catch (error) {
-                console.error(error);
-                alert("⚠️ Error fetching data. Check your internet!");
-            }
+<button onclick="publishMovie()">Publish</button>
+</div>
+
+<script>
+/* ================= FIREBASE CONFIG ================= */
+const firebaseConfig = {
+    apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4",
+    authDomain: "movie-project-b78b4.firebaseapp.com",
+    databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com",
+    projectId: "movie-project-b78b4",
+    storageBucket: "movie-project-b78b4.firebasestorage.app",
+    messagingSenderId: "819696212001",
+    appId: "1:819696212001:web:379b19305c6d604b2deb60"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+/* ================= TMDB CONFIG ================= */
+const TMDB_API_KEY = "cc9374659de08b939499a50af4715216";
+
+/* ================= FETCH MOVIE ================= */
+async function fetchMovie() {
+    const query = document.getElementById("movieSearchInput").value.trim();
+    if (!query) {
+        alert("Enter movie name");
+        return;
+    }
+
+    try {
+        const res = await fetch(
+            `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`
+        );
+        const data = await res.json();
+
+        if (!data.results || data.results.length === 0) {
+            alert("Movie not found");
+            return;
         }
 
-        function saveToFirebase() {
-            const data = {
-                title: document.getElementById('title').value,
-                poster: document.getElementById('poster').value,
-                link: document.getElementById('link').value,
-                story: document.getElementById('story').value,
-                trailer: document.getElementById('yt').value
-            };
-            if(data.title && data.poster) {
-                db.ref('movies').push(data).then(() => {
-                    alert("✅ Published Successfully!");
-                    location.reload();
-                });
-            } else { alert("Fill the data first!"); }
+        const movie = data.results[0];
+
+        document.getElementById("title").value = movie.title || "";
+        document.getElementById("story").value = movie.overview || "";
+
+        if (movie.poster_path) {
+            const posterURL = "https://image.tmdb.org/t/p/w500" + movie.poster_path;
+            document.getElementById("poster").value = posterURL;
+            document.getElementById("posterPreview").src = posterURL;
+            document.getElementById("posterPreview").style.display = "block";
         }
-    </script>
+
+    } catch (err) {
+        alert("TMDB Error");
+        console.error(err);
+    }
+}
+
+/* ================= PUBLISH MOVIE ================= */
+function publishMovie() {
+    const movieData = {
+        title: document.getElementById("title").value,
+        poster: document.getElementById("poster").value,
+        description: document.getElementById("story").value,
+        downloadUrl: document.getElementById("download").value,
+        trailerId: document.getElementById("trailer").value,
+        timestamp: Date.now()
+    };
+
+    if (!movieData.title || !movieData.poster) {
+        alert("Title & Poster required");
+        return;
+    }
+
+    db.ref("movies").push(movieData)
+        .then(() => {
+            alert("Movie Published Successfully!");
+            document.querySelectorAll("input, textarea").forEach(e => e.value = "");
+            document.getElementById("posterPreview").style.display = "none";
+        })
+        .catch(err => {
+            alert("Firebase Error");
+            console.error(err);
+        });
+}
+</script>
+
 </body>
 </html>
