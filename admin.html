@@ -3,47 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Admin Login | FastStream</title>
+    <title>Admin Dashboard | FastStream</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root { --primary: #e50914; --bg: #0f1014; }
         body { font-family: sans-serif; background: var(--bg); color: white; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; }
         .login-box, .admin-container { background: #1c1d24; padding: 30px; border-radius: 12px; border: 1px solid #333; width: 90%; max-width: 400px; text-align: center; }
-        .admin-container { display: none; } /* Initially hidden */
+        .admin-container { display: none; } 
         input, select { width: 100%; padding: 12px; margin: 10px 0; background: #2a2b33; border: 1px solid #444; border-radius: 8px; color: white; box-sizing: border-box; }
         .btn { background: var(--primary); color: white; width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        label { display: block; text-align: left; font-size: 12px; color: #888; margin-top: 5px; }
     </style>
 </head>
 <body>
 
     <div id="loginBox" class="login-box">
-        <i class="fas fa-lock" style="font-size: 40px; color: var(--primary); margin-bottom: 15px;"></i>
-        <h2>Admin Access</h2>
-        <input type="password" id="adminPass" placeholder="Enter Password">
-        <button class="btn" onclick="checkPass()">LOGIN</button>
-        <p id="loginError" style="color: red; font-size: 13px; margin-top: 10px;"></p>
+        <i class="fas fa-user-shield" style="font-size: 40px; color: var(--primary); margin-bottom: 15px;"></i>
+        <h2>Admin Login</h2>
+        <input type="password" id="adminPass" placeholder="Enter Admin Password">
+        <button class="btn" onclick="checkPass()">ENTER DASHBOARD</button>
+        <p id="loginError" style="color: #e50914; font-size: 13px; margin-top: 10px;"></p>
     </div>
 
     <div id="adminPanel" class="admin-container">
-        <h2>🎬 Add New Movie</h2>
-        <input type="text" id="t" placeholder="Movie Title">
-        <input type="text" id="p" placeholder="Poster Image URL">
-        <input type="text" id="l" placeholder="Direct Link (Monetag)">
+        <h2>🚀 Post New Movie</h2>
+        
+        <input type="text" id="t" placeholder="Movie Title (e.g. Pushpa 2)">
+        <input type="text" id="p" placeholder="Poster URL (Direct Link)">
+        <input type="text" id="l" placeholder="Monetag Direct Link">
+        
+        <label>Select Quality</label>
         <select id="q">
             <option value="HD 720p">HD 720p</option>
             <option value="1080p FHD">1080p FHD</option>
             <option value="4K UHD">4K UHD</option>
             <option value="Dual Audio">Dual Audio</option>
         </select>
+
+        <label>Select Genre/Category</label>
+        <select id="g">
+            <option value="All">General</option>
+            <option value="Action">Action</option>
+            <option value="Drama">Drama</option>
+            <option value="Horror">Horror</option>
+            <option value="South">South Indian</option>
+            <option value="Hindi">Hindi Dubbed</option>
+        </select>
+
         <button class="btn" onclick="add()">PUBLISH NOW</button>
-        <p id="msg" style="margin-top:10px;"></p>
+        <p id="msg" style="margin-top:10px; font-weight: bold;"></p>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <script>
-        // Your Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4",
             authDomain: "movie-project-b78b4.firebaseapp.com",
@@ -55,32 +69,52 @@
         };
         firebase.initializeApp(firebaseConfig);
 
-        // PASSWORD SETTINGS
-        const CORRECT_PASSWORD = "admin123"; // <--- Ekhane apnar pochondo moto password din
+        // Change "admin123" to your preferred password
+        const PASS = "admin123"; 
 
         function checkPass() {
-            const pass = document.getElementById('adminPass').value;
-            if(pass === CORRECT_PASSWORD) {
+            const input = document.getElementById('adminPass').value;
+            if(input === PASS) {
                 document.getElementById('loginBox').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
+                document.body.style.height = 'auto'; // Reset height for long forms
             } else {
-                document.getElementById('loginError').innerText = "Wrong Password! Try again.";
+                document.getElementById('loginError').innerText = "❌ Incorrect Password!";
             }
         }
 
         function add(){
-            const t=document.getElementById('t').value, p=document.getElementById('p').value, l=document.getElementById('l').value, q=document.getElementById('q').value;
+            const t=document.getElementById('t').value, 
+                  p=document.getElementById('p').value, 
+                  l=document.getElementById('l').value, 
+                  q=document.getElementById('q').value,
+                  g=document.getElementById('g').value;
+            
+            const msg = document.getElementById('msg');
+
             if(t && p && l) {
-                firebase.database().ref('movies').push({title:t, poster:p, link:l, quality:q})
+                firebase.database().ref('movies').push({
+                    title: t + " " + g, // Genre-ti title-er sathe add kora holo filter-er subidhar jonno
+                    poster: p, 
+                    link: l, 
+                    quality: q,
+                    genre: g,
+                    time: Date.now()
+                })
                 .then(() => { 
-                    alert("✅ Movie Published!"); 
+                    msg.style.color = "#4CAF50";
+                    msg.innerText = "✅ Movie Published Successfully!";
+                    // Reset fields
                     document.getElementById('t').value = '';
                     document.getElementById('p').value = '';
                     document.getElementById('l').value = '';
                 })
-                .catch(e => alert("Error: " + e.message));
+                .catch(e => {
+                    msg.style.color = "#f44336";
+                    msg.innerText = "Error: " + e.message;
+                });
             } else {
-                alert("Fill all fields!");
+                alert("Please fill all fields!");
             }
         }
     </script>
