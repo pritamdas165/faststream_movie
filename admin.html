@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel | FastStream</title>
+    <title>Admin Fix | FastStream</title>
     <style>
         :root { --primary: #e50914; --bg: #0f1014; --box: #1c1d24; }
         body { font-family: sans-serif; background: var(--bg); color: white; padding: 20px; }
@@ -17,12 +17,12 @@
     <div class="box">
         <h2 style="color:#28a745">⚡ Quick Auto-Fetch</h2>
         <input type="text" id="searchName" placeholder="Movie Name (e.g. Kick)">
-        <button class="btn btn-search" onclick="fetchMovie()">SEARCH & FILL DATA</button>
+        <button class="btn btn-search" id="searchBtn" onclick="fetchMovie()">SEARCH & FILL DATA</button>
         <hr>
         <input type="text" id="t" placeholder="Title">
         <input type="text" id="p" placeholder="Poster URL">
         <input type="text" id="l" placeholder="Download Link">
-        <textarea id="s" placeholder="Storyline..."></textarea>
+        <textarea id="s" placeholder="Storyline..." rows="4"></textarea>
         <input type="text" id="ss" placeholder="Screenshots (url1, url2)">
         <input type="text" id="yt" placeholder="Trailer ID">
         <button class="btn" onclick="saveMovie()">PUBLISH NOW</button>
@@ -31,6 +31,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script>
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4",
             authDomain: "movie-project-b78b4.firebaseapp.com",
@@ -43,22 +44,34 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // TMDB Fetch Logic
         async function fetchMovie() {
             const name = document.getElementById('searchName').value;
-            const apiKey = "cc9374659de08b939499a50af4715216";
-            if(!name) return alert("Enter Name!");
+            const apiKey = "cc9374659de08b939499a50af4715216"; // Apnar API Key
+            
+            if(!name) {
+                alert("Please enter a movie name!");
+                return;
+            }
 
             try {
-                const res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(name)}`);
+                const url = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(name)}`;
+                const res = await fetch(url);
                 const data = await res.json();
-                if(data.results.length > 0) {
+                
+                if(data.results && data.results.length > 0) {
                     const m = data.results[0];
                     document.getElementById('t').value = m.title;
                     document.getElementById('p').value = "https://image.tmdb.org/t/p/w500" + m.poster_path;
                     document.getElementById('s').value = m.overview;
-                    alert("✅ Success!");
-                } else { alert("❌ Not Found!"); }
-            } catch(e) { alert("Error!"); }
+                    alert("✅ Data Fetched!");
+                } else {
+                    alert("❌ No movie found!");
+                }
+            } catch(e) {
+                console.log(e);
+                alert("⚠️ Connection Error! Please check internet.");
+            }
         }
 
         function saveMovie() {
@@ -70,7 +83,14 @@
                 screenshots: document.getElementById('ss').value,
                 trailer: document.getElementById('yt').value
             };
-            db.ref('movies').push(data).then(() => alert("Published!"));
+            if(data.title) {
+                db.ref('movies').push(data).then(() => {
+                    alert("✅ Published Successfully!");
+                    location.reload();
+                });
+            } else {
+                alert("Please fill the Title!");
+            }
         }
     </script>
 </body>
