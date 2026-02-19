@@ -22,12 +22,18 @@
         
         <label>Movie Title</label>
         <input type="text" id="title" placeholder="e.g. Kick (2014)">
+
+        <label>Genre (Matches User Panel Buttons)</label>
+        <input type="text" id="genre" placeholder="e.g. Action, South, Hindi">
         
         <label>Poster Image URL</label>
         <input type="text" id="poster" placeholder="Paste Image Link">
         
         <label>Download Link</label>
         <input type="text" id="link" placeholder="Paste Download Link">
+
+        <label>Quality (Badge)</label>
+        <input type="text" id="quality" placeholder="e.g. HD, 4K, Dual Audio">
         
         <label>Storyline / Description</label>
         <textarea id="story" rows="4" placeholder="Brief story..."></textarea>
@@ -42,7 +48,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
     <script>
-        // Apnar Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4",
             authDomain: "movie-project-b78b4.firebaseapp.com",
@@ -57,12 +62,13 @@
 
         function saveToFirebase() {
             const title = document.getElementById('title').value;
+            const genre = document.getElementById('genre').value;
             const poster = document.getElementById('poster').value;
             const link = document.getElementById('link').value;
+            const quality = document.getElementById('quality').value;
             const story = document.getElementById('story').value;
             const trailer = document.getElementById('yt').value;
 
-            // Form Validation
             if(!title || !poster || !link) {
                 alert("Please fill Title, Poster, and Download Link!");
                 return;
@@ -70,21 +76,24 @@
 
             const movieData = {
                 title: title,
+                genre: genre, // Added genre for filtering
                 poster: poster,
                 link: link,
+                quality: quality || 'HD', // Matches user panel badge
                 story: story,
                 trailer: trailer,
                 date: new Date().toLocaleDateString()
             };
 
-            // Database Save
             db.ref('movies').push(movieData)
             .then(() => {
                 alert("✅ Movie Published Successfully!");
                 // Clear fields
                 document.getElementById('title').value = "";
+                document.getElementById('genre').value = "";
                 document.getElementById('poster').value = "";
                 document.getElementById('link').value = "";
+                document.getElementById('quality').value = "";
                 document.getElementById('story').value = "";
                 document.getElementById('yt').value = "";
             })
