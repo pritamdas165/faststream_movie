@@ -3,81 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fast8 Admin - Upload</title>
+    <title>Fast8 Admin - Professional Panel</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        :root { --primary: #e50914; --bg: #0a0a0a; --card: #151515; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; padding: 20px; }
-        .form-card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #222; max-width: 500px; margin: auto; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #333; color: white; border-radius: 8px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 15px; background: var(--primary); border: none; color: white; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        .btn:disabled { background: #555; }
-        #status { margin-top: 10px; text-align: center; color: var(--primary); font-size: 14px; }
+        :root { --primary: #e50914; --bg: #0a0a0a; --card: #151515; --border: #252525; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; padding: 20px; margin: 0; }
+        .form-card { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid var(--border); max-width: 550px; margin: 30px auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h2 { text-align: center; color: var(--primary); margin-bottom: 25px; font-weight: 800; }
+        
+        label { display: block; margin-top: 15px; font-size: 13px; color: #888; font-weight: bold; }
+        input, select { width: 100%; padding: 12px; margin-top: 5px; background: #222; border: 1px solid var(--border); color: white; border-radius: 8px; box-sizing: border-box; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--primary); }
+        
+        .upload-area { border: 2px dashed var(--border); padding: 10px; border-radius: 8px; text-align: center; cursor: pointer; margin-top: 5px; }
+        .upload-area:hover { border-color: var(--primary); }
+
+        .btn { width: 100%; padding: 16px; background: var(--primary); border: none; color: white; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 25px; font-size: 1rem; transition: 0.3s; }
+        .btn:hover { background: #b20710; transform: translateY(-2px); }
+        .btn:disabled { background: #555; cursor: not-allowed; transform: none; }
+        
+        #status { margin-top: 15px; text-align: center; color: #ffcc00; font-size: 14px; font-weight: bold; }
+        .preview-img { width: 80px; height: 110px; object-fit: cover; border-radius: 5px; margin-top: 10px; display: none; }
     </style>
 </head>
 <body>
-    <div class="form-card">
-        <h2>Add Movie</h2>
-        <label>Poster (Gallery)</label>
-        <input type="file" id="poster" accept="image/*">
-        
-        <input type="text" id="title" placeholder="Movie Title">
-        
-        <select id="genre">
-            <option value="Bollywood">Bollywood</option>
-            <option value="Hollywood">Hollywood</option>
-        </select>
 
-        <input type="text" id="download" placeholder="Direct Download Link">
+    <div class="form-card">
+        <h2><i class="fas fa-film"></i> POST NEW MOVIE</h2>
         
+        <label>Movie Poster</label>
+        <input type="file" id="poster" accept="image/*" onchange="preview(this, 'posterPreview')">
+        <img id="posterPreview" class="preview-img">
+
+        <label>Movie Title</label>
+        <input type="text" id="title" placeholder="e.g. Jawan (2023) Hindi WEB-DL">
+
+        <div style="display: flex; gap: 10px;">
+            <div style="flex: 1;">
+                <label>Category</label>
+                <select id="genre">
+                    <option value="Bollywood">Bollywood</option>
+                    <option value="Hollywood">Hollywood</option>
+                    <option value="South Hindi">South Hindi</option>
+                    <option value="Web Series">Web Series</option>
+                </select>
+            </div>
+            <div style="flex: 1;">
+                <label>Quality</label>
+                <input type="text" id="quality" placeholder="720p / 1080p">
+            </div>
+        </div>
+
+        <label>Direct Download Link</label>
+        <input type="text" id="download" placeholder="Paste G-Drive or Direct Link">
+
         <div id="status"></div>
-        <button class="btn" id="uploadBtn" onclick="uploadMovie()">PUBLISH NOW</button>
+        <button class="btn" id="uploadBtn" onclick="uploadMovie()">
+            <i class="fas fa-cloud-upload-alt"></i> PUBLISH TO WEBSITE
+        </button>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
     <script>
-        firebase.initializeApp({ apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com" });
+        // Initialize Firebase
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", 
+            databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com" 
+        };
+        firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // Image Preview Function
+        function preview(input, id) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById(id);
+                    img.src = e.target.result;
+                    img.style.display = "block";
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Imgur Upload Logic
         async function uploadImage(file) {
             const formData = new FormData();
             formData.append("image", file);
-            const res = await fetch("https://api.imgur.com/3/image", {
-                method: "POST",
-                headers: { Authorization: "Client-ID 546c36551c0986c" },
-                body: formData
-            });
-            const data = await res.json();
-            return data.data.link;
+            try {
+                const res = await fetch("https://api.imgur.com/3/image", {
+                    method: "POST",
+                    headers: { Authorization: "Client-ID 546c36551c0986c" },
+                    body: formData
+                });
+                const data = await res.json();
+                if(data.success) return data.data.link;
+                throw new Error("Imgur Upload Failed");
+            } catch (err) {
+                console.error(err);
+                return null;
+            }
         }
 
         async function uploadMovie() {
             const btn = document.getElementById('uploadBtn');
             const status = document.getElementById('status');
             const file = document.getElementById('poster').files[0];
-            const title = document.getElementById('title').value;
-            const link = document.getElementById('download').value;
+            const title = document.getElementById('title').value.trim();
+            const link = document.getElementById('download').value.trim();
+            const quality = document.getElementById('quality').value.trim() || "HD";
 
-            if(!file || !title || !link) return alert("Fill all fields!");
+            if(!file || !title || !link) return alert("Please fill Title, Link and select a Poster!");
 
             btn.disabled = true;
-            status.innerText = "Uploading to Gallery...";
+            status.innerText = "⏳ Uploading image to gallery...";
             
             try {
                 const imgUrl = await uploadImage(file);
+                if(!imgUrl) {
+                    alert("Image upload failed! Please try again.");
+                    btn.disabled = false;
+                    return;
+                }
+
+                status.innerText = "🚀 Publishing movie data...";
                 await db.ref('movies').push({
                     title: title,
                     poster: imgUrl,
                     genre: document.getElementById('genre').value,
+                    quality: quality,
                     download: link,
                     timestamp: Date.now()
                 });
-                alert("Success!");
+
+                status.style.color = "#00ff88";
+                status.innerText = "✅ Movie Published Successfully!";
+                alert("Movie Added Successfully!");
                 location.reload();
             } catch (e) {
-                alert("Error!");
+                console.error(e);
+                alert("Something went wrong! Check console.");
                 btn.disabled = false;
+                status.innerText = "";
             }
         }
     </script>
