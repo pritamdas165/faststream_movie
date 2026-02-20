@@ -3,118 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FastStream | Watch Movie</title>
+    <title>FastStream | Watch</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root { --primary: #e50914; --bg: #0f0f0f; --card-bg: #1a1a1a; --border: #2b2b2b; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: white; margin: 0; padding: 0; }
-        
-        header { padding: 15px 5%; background: rgba(0,0,0,0.8); display: flex; align-items: center; position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(10px); }
-        .back-btn { color: white; font-size: 20px; margin-right: 15px; cursor: pointer; text-decoration: none; }
-        .logo { font-size: 20px; font-weight: 900; color: var(--primary); text-decoration: none; }
-
-        .container { padding: 20px 5%; max-width: 900px; margin: 0 auto; }
-        
-        /* Movie Detail Section */
-        .movie-header { display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; }
-        .poster-box { width: 180px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .poster-box img { width: 100%; display: block; }
-        
-        .info-box { flex: 1; min-width: 250px; }
-        .info-box h1 { margin: 0 0 10px; font-size: 24px; color: white; }
-        .badge { background: var(--primary); padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-right: 10px; }
-        .meta { color: #888; font-size: 14px; margin-top: 15px; line-height: 1.6; }
-        .meta b { color: #ccc; }
-
-        /* Screenshots Section */
-        .section-title { font-size: 18px; margin: 30px 0 15px; border-left: 4px solid var(--primary); padding-left: 10px; }
-        .screenshot-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
-        .screenshot-grid img { width: 100%; border-radius: 8px; border: 1px solid var(--border); }
-
-        /* Download Button */
-        .download-btn { 
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            width: 100%; padding: 18px; background: var(--primary); color: white; 
-            text-decoration: none; border-radius: 12px; font-weight: 900; 
-            font-size: 18px; margin: 30px 0; transition: 0.3s;
-        }
-        .download-btn:hover { background: #b20710; transform: scale(1.02); }
-
-        @media (max-width: 600px) { .poster-box { width: 100%; } .info-box h1 { font-size: 20px; } }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: white; margin: 0; }
+        header { padding: 15px 5%; background: rgba(0,0,0,0.8); display: flex; align-items: center; }
+        .container { padding: 20px 5%; max-width: 800px; margin: 0 auto; }
+        .movie-header { display: flex; gap: 20px; flex-wrap: wrap; }
+        .poster-box { width: 150px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
+        .poster-box img { width: 100%; }
+        .screenshot-grid img { width: 100%; border-radius: 8px; margin-top: 10px; border: 1px solid var(--border); }
+        .download-btn { display: block; text-align: center; padding: 15px; background: var(--primary); color: white; text-decoration: none; border-radius: 10px; font-weight: 800; margin-top: 20px; }
     </style>
 </head>
 <body>
-
-    <header>
-        <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
-        <a href="index.html" class="logo">FASTSTREAM</a>
-    </header>
-
-    <div class="container" id="movieDetails">
-        <p style="text-align:center; margin-top:50px;">Loading movie details...</p>
-    </div>
-
+    <header><a href="index.html" style="color:white; margin-right:20px;"><i class="fas fa-arrow-left"></i></a><span style="color:var(--primary); font-weight:900;">FASTSTREAM</span></header>
+    <div class="container" id="details">Loading...</div>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4",
-            authDomain: "movie-project-b78b4.firebaseapp.com",
-            databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com",
-            projectId: "movie-project-b78b4",
-            storageBucket: "movie-project-b78b4.firebasestorage.app",
-            messagingSenderId: "819696212001",
-            appId: "1:819696212001:web:379b19305c6d604b2deb60"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        // Get ID from URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const movieId = urlParams.get('id');
-
-        if (movieId) {
-            db.ref('movies/' + movieId).on('value', (snap) => {
-                const m = snap.val();
-                if (!m) {
-                    document.getElementById('movieDetails').innerHTML = "Movie not found.";
-                    return;
-                }
-
-                // Screenshot HTML
-                let ssHtml = '';
-                if (m.screenshots) {
-                    m.screenshots.forEach(link => {
-                        if(link) ssHtml += `<img src="${link}" alt="screenshot">`;
-                    });
-                }
-
-                document.getElementById('movieDetails').innerHTML = `
-                    <div class="movie-header">
-                        <div class="poster-box">
-                            <img src="${m.poster}" alt="poster">
-                        </div>
-                        <div class="info-box">
-                            <h1>${m.title}</h1>
-                            <div><span class="badge">${m.quality}</span> <span class="badge" style="background:#333;">${m.genre}</span></div>
-                            <div class="meta">
-                                <p><b>Audio:</b> Hindi / English</p>
-                                <p><b>Release:</b> 2024 (Latest Update)</p>
-                                <p><b>Description:</b> FastStream brings you high-quality entertainment. Download and enjoy the latest ${m.genre} blockbuster.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="section-title">SCREENSHOTS</div>
-                    <div class="screenshot-grid">${ssHtml || '<p>No screenshots available.</p>'+'</div>'}
-
-                    <a href="${m.download}" class="download-btn" target="_blank">
-                        <i class="fas fa-download"></i> DOWNLOAD NOW
-                    </a>
-                `;
-            });
-        }
+        const firebaseConfig = { apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", authDomain: "movie-project-b78b4.firebaseapp.com", databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com", projectId: "movie-project-b78b4", storageBucket: "movie-project-b78b4.firebasestorage.app", messagingSenderId: "819696212001", appId: "1:819696212001:web:379b19305c6d604b2deb60" };
+        firebase.initializeApp(firebaseConfig); const db = firebase.database();
+        const id = new URLSearchParams(window.location.search).get('id');
+        db.ref('movies/' + id).on('value', (snap) => {
+            const m = snap.val();
+            let ss = ''; m.screenshots?.forEach(s => { if(s) ss += `<img src="${s}">`; });
+            document.getElementById('details').innerHTML = `
+                <div class="movie-header">
+                    <div class="poster-box"><img src="${m.poster}"></div>
+                    <div class="info"><h1>${m.title}</h1><p>Genre: ${m.genre}</p><p>Quality: ${m.quality}</p></div>
+                </div>
+                <h3 style="margin-top:30px;">Screenshots</h3><div class="screenshot-grid">${ss}</div>
+                <a href="${m.download}" class="download-btn">DOWNLOAD NOW</a>`;
+        });
     </script>
 </body>
 </html>
