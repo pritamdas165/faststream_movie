@@ -7,49 +7,66 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root { --primary: #e50914; --bg: #0f0f0f; --card-bg: #1a1a1a; --border: #2b2b2b; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: white; margin: 0; padding-bottom: 80px; }
+        body { font-family: sans-serif; background: var(--bg); color: white; margin: 0; padding-bottom: 80px; }
         .container { padding: 20px; max-width: 500px; margin: 0 auto; }
-        .preview-container { background: var(--card-bg); border: 2px dashed var(--border); border-radius: 15px; height: 200px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; overflow: hidden; }
-        .preview-container img { width: 100%; height: 100%; object-fit: cover; display: none; }
-        .form-card { background: var(--card-bg); padding: 20px; border-radius: 15px; border: 1px solid var(--border); }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; background: #252525; border: 1px solid var(--border); color: white; border-radius: 8px; box-sizing: border-box; }
-        .publish-btn { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; }
+        .preview-box { background: var(--card-bg); border: 2px dashed var(--border); border-radius: 12px; height: 200px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; overflow: hidden; }
+        .preview-box img { width: 100%; height: 100%; object-fit: cover; display: none; }
+        .form-card { background: var(--card-bg); padding: 20px; border-radius: 12px; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; background: #222; border: 1px solid var(--border); color: white; border-radius: 8px; box-sizing: border-box; }
+        .publish-btn { width: 100%; padding: 15px; background: var(--primary); border: none; color: white; border-radius: 10px; font-weight: bold; cursor: pointer; }
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #000; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid var(--border); }
-        .nav-item { text-align: center; color: #777; font-size: 11px; cursor: pointer; text-decoration: none; }
+        .nav-item { text-align: center; color: #777; font-size: 11px; cursor: pointer; }
         .nav-item.active { color: var(--primary); }
-        .nav-item i { display: block; font-size: 20px; }
         .hidden { display: none; }
+        .movie-list-item { background: #1a1a1a; padding: 10px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
 <body>
-    <div class="container" id="add-section">
-        <div class="preview-container" id="previewBox"><img id="posterImg" src=""><span id="pText">Poster Preview</span></div>
+    <div id="addPage" class="container">
+        <div class="preview-box" id="pBox"><img id="pImg"><span>Live Preview</span></div>
         <div class="form-card">
-            <input type="text" id="poster" placeholder="Poster URL" oninput="updatePreview()">
+            <input type="text" id="poster" placeholder="Poster URL" oninput="showP()">
             <input type="text" id="title" placeholder="Movie Title">
-            <input type="text" id="genre" placeholder="Genre (e.g. Action)">
+            <select id="genre">
+                <option value="Bollywood">Bollywood</option>
+                <option value="Hollywood">Hollywood</option>
+                <option value="Web Series">Web Series</option>
+                <option value="18+">18+</option>
+            </select>
             <input type="text" id="quality" placeholder="Quality (e.g. 1080p)">
             <input type="text" id="ss1" placeholder="Screenshot URL">
             <input type="text" id="download" placeholder="Download Link">
-            <button class="publish-btn" onclick="addMovie()">PUBLISH NOW</button>
+            <button class="publish-btn" onclick="save()">PUBLISH NOW</button>
         </div>
     </div>
+    <div id="statsPage" class="container hidden"><h2>All Movies</h2><div id="list"></div></div>
+
     <div class="bottom-nav">
-        <div class="nav-item active"><i class="fas fa-plus-circle"></i><span>Add</span></div>
-        <a href="index.html" class="nav-item"><i class="fas fa-external-link-alt"></i><span>Site</span></a>
-        <div class="nav-item"><i class="fas fa-chart-line"></i><span>Stats</span></div>
-        <div class="nav-item"><i class="fas fa-cog"></i><span>Set</span></div>
+        <div class="nav-item active" onclick="tab('add')"><i class="fas fa-plus-circle"></i><br>Add</div>
+        <div class="nav-item" onclick="tab('stats')"><i class="fas fa-chart-line"></i><br>Stats</div>
+        <a href="index.html" class="nav-item" style="color:#777; text-decoration:none;"><i class="fas fa-external-link-alt"></i><br>Site</a>
     </div>
+
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script>
         const firebaseConfig = { apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", authDomain: "movie-project-b78b4.firebaseapp.com", databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com", projectId: "movie-project-b78b4", storageBucket: "movie-project-b78b4.firebasestorage.app", messagingSenderId: "819696212001", appId: "1:819696212001:web:379b19305c6d604b2deb60" };
         firebase.initializeApp(firebaseConfig); const db = firebase.database();
-        function updatePreview() { const url = document.getElementById('poster').value; const img = document.getElementById('posterImg'); if(url) { img.src = url; img.style.display="block"; document.getElementById('pText').style.display="none"; } }
-        function addMovie() {
-            const data = { title: document.getElementById('title').value, poster: document.getElementById('poster').value, genre: document.getElementById('genre').value, quality: document.getElementById('quality').value, download: document.getElementById('download').value, screenshots: [document.getElementById('ss1').value], timestamp: Date.now() };
-            db.ref('movies').push(data).then(() => { alert("Done!"); location.reload(); });
+
+        function showP() { const url = document.getElementById('poster').value; const img = document.getElementById('pImg'); if(url) { img.src = url; img.style.display="block"; } }
+        function tab(t) { 
+            document.getElementById('addPage').classList.toggle('hidden', t==='stats');
+            document.getElementById('statsPage').classList.toggle('hidden', t==='add');
         }
+        function save() {
+            const d = { title: document.getElementById('title').value, poster: document.getElementById('poster').value, genre: document.getElementById('genre').value, quality: document.getElementById('quality').value, download: document.getElementById('download').value, screenshots: [document.getElementById('ss1').value] };
+            db.ref('movies').push(d).then(() => { alert("Saved!"); location.reload(); });
+        }
+        db.ref('movies').on('value', snap => {
+            const l = document.getElementById('list'); l.innerHTML = '';
+            snap.forEach(c => { l.innerHTML += `<div class="movie-list-item"><span>${c.val().title}</span><button onclick="del('${c.key}')" style="color:red; background:none; border:none;">Delete</button></div>`; });
+        });
+        function del(id) { if(confirm("Delete?")) db.ref('movies/'+id).remove(); }
     </script>
 </body>
 </html>
