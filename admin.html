@@ -3,179 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FastStream | Pro Admin Panel</title>
+    <title>FastStream | Admin Gallery Upload</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root { --primary: #e50914; --bg: #0f0f0f; --card-bg: #1a1a1a; --border: #2b2b2b; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: white; margin: 0; padding-bottom: 80px; }
+        body { font-family: sans-serif; background: var(--bg); color: white; margin: 0; padding-bottom: 80px; }
         .container { padding: 20px; max-width: 500px; margin: 0 auto; }
-        
-        /* Upload Status Bar */
-        .progress-container { width: 100%; background: #222; height: 8px; border-radius: 10px; margin-bottom: 20px; display: none; }
-        #progressBar { width: 0%; height: 100%; background: var(--primary); border-radius: 10px; transition: 0.3s; }
-
-        /* Form Card */
-        .form-card { background: var(--card-bg); padding: 20px; border-radius: 15px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        label { font-size: 12px; color: #888; font-weight: 700; text-transform: uppercase; margin-top: 15px; display: block; }
-        
-        input, select { 
-            width: 100%; padding: 14px; margin: 8px 0; background: #252525; 
-            border: 1px solid var(--border); color: white; border-radius: 10px; outline: none; box-sizing: border-box;
-        }
-
-        /* Gallery Upload Button Styling */
-        input[type="file"] { 
-            padding: 10px; background: #111; border: 1px dashed var(--primary); cursor: pointer;
-        }
-
-        .publish-btn { 
-            width: 100%; padding: 16px; background: var(--primary); color: white; 
-            border: none; border-radius: 12px; font-weight: 900; cursor: pointer; 
-            font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 20px;
-        }
-
-        /* Bottom Navigation Bar */
-        .bottom-nav {
-            position: fixed; bottom: 0; width: 100%; background: #000;
-            display: flex; justify-content: space-around; padding: 12px 0;
-            border-top: 1px solid var(--border); z-index: 1000;
-        }
-        .nav-item { text-align: center; color: #777; font-size: 11px; cursor: pointer; text-decoration: none; }
-        .nav-item.active { color: var(--primary); }
-        .nav-item i { display: block; font-size: 20px; margin-bottom: 4px; }
-
-        .hidden { display: none; }
+        .form-card { background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border); }
+        label { font-size: 12px; color: #888; font-weight: bold; display: block; margin-top: 15px; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; background: #222; border: 1px solid var(--border); color: white; border-radius: 8px; box-sizing: border-box; }
+        input[type="file"] { border: 1px dashed var(--primary); background: #111; cursor: pointer; }
+        .publish-btn { width: 100%; padding: 15px; background: var(--primary); border: none; color: white; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        #status { font-size: 14px; color: #e50914; text-align: center; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-    <div class="container" id="addPage">
-        <h2 style="margin-bottom:10px;"><i class="fas fa-plus-circle"></i> Add New Movie</h2>
-        
-        <div class="progress-container" id="pContainer"><div id="progressBar"></div></div>
-
+    <div class="container">
+        <h2><i class="fas fa-images"></i> Gallery Upload Admin</h2>
         <div class="form-card">
-            <label><i class="fas fa-image"></i> Select Poster (Gallery)</label>
+            <label>Select Poster (Gallery)</label>
             <input type="file" id="posterFile" accept="image/*">
 
             <label>Movie Title</label>
-            <input type="text" id="title" placeholder="Enter movie title...">
+            <input type="text" id="title" placeholder="Enter movie name">
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <div>
-                    <label>Category</label>
-                    <select id="genre">
-                        <option value="Bollywood">Bollywood</option>
-                        <option value="Hollywood">Hollywood</option>
-                        <option value="Web Series">Web Series</option>
-                        <option value="18+">18+ Content</option>
-                        <option value="South Indian">South Indian</option>
-                    </select>
-                </div>
-                <div>
-                    <label>Quality</label>
-                    <input type="text" id="quality" placeholder="1080p, 4K...">
-                </div>
-            </div>
+            <label>Genre</label>
+            <select id="genre">
+                <option value="Bollywood">Bollywood</option>
+                <option value="Hollywood">Hollywood</option>
+                <option value="Web Series">Web Series</option>
+                <option value="18+">18+</option>
+            </select>
 
-            <label><i class="fas fa-images"></i> Screenshot 1 (Gallery)</label>
-            <input type="file" id="ss1" accept="image/*">
+            <label>Select Screenshot (Gallery)</label>
+            <input type="file" id="ssFile" accept="image/*">
 
             <label>Download Link</label>
-            <input type="text" id="download" placeholder="Paste G-Drive or Direct Link">
+            <input type="text" id="download" placeholder="Paste link here">
 
-            <button class="publish-btn" id="uploadBtn" onclick="handleUpload()">
-                <i class="fas fa-cloud-upload-alt"></i> PUBLISH MOVIE
-            </button>
+            <div id="status"></div>
+            <button class="publish-btn" id="uploadBtn" onclick="handleUpload()">PUBLISH MOVIE</button>
         </div>
-    </div>
-
-    <div class="container hidden" id="statsPage">
-        <h2><i class="fas fa-chart-bar"></i> Movie Stats</h2>
-        <div id="movieList"></div>
-    </div>
-
-    <div class="bottom-nav">
-        <div class="nav-item active" onclick="showTab('add', this)"><i class="fas fa-plus-square"></i><span>Add</span></div>
-        <a href="index.html" class="nav-item"><i class="fas fa-globe"></i><span>Live Site</span></a>
-        <div class="nav-item" onclick="showTab('stats', this)"><i class="fas fa-database"></i><span>Movies</span></div>
-        <div class="nav-item"><i class="fas fa-user-cog"></i><span>Admin</span></div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4",
-            authDomain: "movie-project-b78b4.firebaseapp.com",
-            databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com",
-            projectId: "movie-project-b78b4",
-            storageBucket: "movie-project-b78b4.firebasestorage.app",
-            messagingSenderId: "819696212001",
-            appId: "1:819696212001:web:379b19305c6d604b2deb60"
+          apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4",
+          authDomain: "movie-project-b78b4.firebaseapp.com",
+          databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com",
+          projectId: "movie-project-b78b4",
+          storageBucket: "movie-project-b78b4.firebasestorage.app",
+          messagingSenderId: "819696212001",
+          appId: "1:819696212001:web:379b19305c6d604b2deb60"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        const storage = firebase.storage();
 
-        // Sidebar/Tab Switcher
-        function showTab(tab, el) {
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            el.classList.add('active');
-            document.getElementById('addPage').classList.toggle('hidden', tab === 'stats');
-            document.getElementById('statsPage').classList.toggle('hidden', tab === 'add');
-        }
+        // 🚀 Imgur Upload Function (No Firebase Storage Required!)
+        async function uploadToImgur(file) {
+            if (!file) return "";
+            const formData = new FormData();
+            formData.append("image", file);
 
-        // Upload to Storage Helper
-        async function uploadFile(file, folder) {
-            if(!file) return "";
-            const ref = storage.ref().child(`${folder}/${Date.now()}_${file.name}`);
-            const task = await ref.put(file);
-            return await task.ref.getDownloadURL();
+            const response = await fetch("https://api.imgur.com/3/image", {
+                method: "POST",
+                headers: { Authorization: "Client-ID 546c36551c0986c" }, // Public Client ID
+                body: formData
+            });
+            const data = await response.json();
+            return data.data.link;
         }
 
         async function handleUpload() {
             const btn = document.getElementById('uploadBtn');
-            const poster = document.getElementById('posterFile').files[0];
-            const ss1 = document.getElementById('ss1').files[0];
+            const status = document.getElementById('status');
+            const posterFile = document.getElementById('posterFile').files[0];
+            const ssFile = document.getElementById('ssFile').files[0];
             const title = document.getElementById('title').value;
 
-            if(!poster || !title) return alert("Please select a poster and enter movie title!");
+            if (!posterFile || !title) return alert("Poster and Title are required!");
 
             btn.disabled = true;
-            btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Uploading...";
-            document.getElementById('pContainer').style.display = "block";
-            document.getElementById('progressBar').style.width = "40%";
+            status.innerText = "Uploading Images to Server...";
 
             try {
-                // Upload Poster & Screenshot
-                const posterUrl = await uploadFile(poster, 'posters');
-                document.getElementById('progressBar').style.width = "70%";
-                const ssUrl = await uploadFile(ss1, 'screenshots');
+                // Upload Poster and Screenshot to Imgur
+                const posterUrl = await uploadToImgur(posterFile);
+                const ssUrl = await uploadToImgur(ssFile);
 
-                // Save to Database
+                // Save data to Firebase Realtime Database
                 const movieData = {
                     title: title,
                     poster: posterUrl,
                     genre: document.getElementById('genre').value,
-                    quality: document.getElementById('quality').value,
                     download: document.getElementById('download').value,
                     screenshots: [ssUrl],
                     timestamp: Date.now()
                 };
 
                 await db.ref('movies').push(movieData);
-                document.getElementById('progressBar').style.width = "100%";
-                alert("Success! Movie Published with Gallery Images.");
+                status.innerText = "Published Successfully!";
+                alert("Done! Movie added to Homepage.");
                 location.reload();
 
-            } catch (e) {
-                console.error(e);
-                alert("Error! Check if Firebase Storage is enabled.");
+            } catch (error) {
+                console.error(error);
+                alert("Upload failed! Check internet or try again.");
                 btn.disabled = false;
-                btn.innerHTML = "PUBLISH MOVIE";
             }
         }
     </script>
