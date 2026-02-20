@@ -2,80 +2,177 @@
 <html lang="en">
 <head>
     <script src="https://quge5.com/88/tag.min.js" data-zone="212786" async data-cfasync="false"></script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Download Link - Fast8Movie</title>
+    <title>Secure Download | Fast8Movie</title>
+
     <style>
-        body { background: #0a0a0a; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .box { background: #151515; padding: 30px; border-radius: 20px; border: 1px solid #222; text-align: center; width: 85%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .timer { font-size: 3rem; color: #e50914; margin: 20px 0; font-weight: bold; }
-        .btn { display: none; background: #e50914; color: white; padding: 15px; border-radius: 10px; text-decoration: none; font-weight: bold; cursor: pointer; border: none; width: 100%; font-size: 1.1rem; }
-        .btn:hover { background: #b20710; transform: scale(1.02); transition: 0.2s; }
+        /* CSS RESET & THEME VARIABLE */
+        :root {
+            --primary-bg: #0a0a0a;
+            --card-bg: #151515;
+            --accent-color: #e50914;
+            --border-color: #222;
+            --text-white: #ffffff;
+        }
+
+        body {
+            background: var(--primary-bg);
+            color: var(--text-white);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* DOWNLOAD BOX UI */
+        .download-container {
+            background: var(--card-bg);
+            padding: 40px 30px;
+            border-radius: 24px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+            width: 90%;
+            max-width: 420px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+        }
+
+        .ad-space {
+            margin-bottom: 25px;
+            min-height: 60px;
+            border-bottom: 1px solid #222;
+            padding-bottom: 15px;
+        }
+
+        .status-msg {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #ccc;
+        }
+
+        .timer-display {
+            font-size: 4rem;
+            color: var(--accent-color);
+            margin: 20px 0;
+            font-weight: 800;
+            letter-spacing: -2px;
+        }
+
+        /* BUTTON INTERACTION */
+        .download-btn {
+            display: none;
+            background: var(--accent-color);
+            color: var(--text-white);
+            padding: 16px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            width: 100%;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            background: #b20710;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(229, 9, 20, 0.5);
+        }
+
+        .download-btn:active {
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
 
-    <div class="box">
-        <div style="margin-bottom: 20px; min-height: 50px;">
-            <script>(function(s){s.dataset.zone='10632678',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+    <div class="download-container">
+        <div class="ad-space">
+            <script>
+                (function(s){
+                    s.dataset.zone='10632678';
+                    s.src='https://nap5k.com/tag.min.js';
+                })([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')));
+            </script>
         </div>
         
-        <h3 id="msg">Generating Secure Link...</h3>
-        <div class="timer" id="t">10</div>
+        <h3 id="msg" class="status-msg">Generating Secure Link...</h3>
+        <div id="t" class="timer-display">10</div>
         
-        <a id="b" href="https://omg10.com/4/10626413" target="_blank" class="btn">START DOWNLOAD NOW</a>
+        <a id="b" href="https://omg10.com/4/10626413" target="_blank" class="download-btn">
+            Start Download Now
+        </a>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <script>
-        // 1. Firebase Initialization (Ekti baar-i hobe)
+        /**
+         * APPLICATION LOGIC
+         * Initializing Firebase and managing the secure timer.
+         */
+        
+        // Firebase Config
         const firebaseConfig = { 
             apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", 
             databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com" 
         };
+
+        // Initialize App
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // 2. Movie ID Fetch from URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const movieId = urlParams.get('id');
+        // Get Movie ID from URL
+        const movieId = new URLSearchParams(window.location.search).get('id');
 
-        // 3. Main Link Generation Logic
+        // Main Countdown & Fetching Logic
         if (movieId) {
             db.ref('movies/' + movieId).once('value', (snapshot) => {
                 const data = snapshot.val();
-                if (data) {
+
+                if (data && data.download) {
                     const finalLink = data.download;
                     let timeLeft = 10;
-                    const timerDiv = document.getElementById('t');
-                    const downloadBtn = document.getElementById('b');
+                    
+                    const timerEl = document.getElementById('t');
+                    const msgEl = document.getElementById('msg');
+                    const btnEl = document.getElementById('b');
 
                     const countdown = setInterval(() => {
                         timeLeft--;
-                        timerDiv.innerText = timeLeft;
+                        timerEl.innerText = timeLeft;
 
                         if (timeLeft <= 0) {
                             clearInterval(countdown);
-                            timerDiv.style.display = 'none';
-                            document.getElementById('msg').innerText = "Link Ready!";
-                            downloadBtn.style.display = 'block';
+                            
+                            // UI Update
+                            timerEl.style.display = 'none';
+                            msgEl.innerText = "Your Link is Ready!";
+                            msgEl.style.color = "#00ff88"; // Success green
+                            btnEl.style.display = 'block';
 
-                            // 4. Click Action: Ads open hobe, tarpore movie download shuru hobe
-                            downloadBtn.onclick = function() {
+                            // Ad Interaction Handler
+                            btnEl.onclick = function() {
                                 setTimeout(() => {
                                     window.location.href = finalLink;
-                                }, 2000); 
+                                }, 2500); // 2.5s delay to ensure Direct Link triggers
                             };
                         }
                     }, 1000);
                 } else {
-                    document.getElementById('msg').innerText = "Movie Not Found!";
+                    document.getElementById('msg').innerText = "Error: Link Expired!";
                 }
             });
         } else {
-            document.getElementById('msg').innerText = "Invalid Movie ID!";
+            document.getElementById('msg').innerText = "Invalid Request Parameter!";
         }
     </script>
 </body>
