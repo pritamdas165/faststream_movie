@@ -6,40 +6,80 @@
     <title>FastStream | Premium Home</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
     <style>
-        :root { --primary: #e50914; --bg: #121212; --card-bg: #1e1e1e; --nav-bg: rgba(20, 20, 20, 0.95); --sidebar-bg: #1a1a1a; }
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: radial-gradient(circle at top, #1c1c1c 0%, #121212 100%); color: white; margin: 0; overflow-x: hidden; }
+        :root { 
+            --primary: #e50914; 
+            --bg: #121212; 
+            --card-bg: #1e1e1e; 
+            --nav-bg: rgba(20, 20, 20, 0.95); 
+            --sidebar-bg: #1a1a1a; 
+        }
+
+        body { 
+            font-family: 'Helvetica Neue', Arial, sans-serif; 
+            background: radial-gradient(circle at top, #1c1c1c 0%, #121212 100%); 
+            color: white; 
+            margin: 0; 
+            overflow-x: hidden; 
+        }
 
         /* Navbar */
-        header { padding: 15px 5%; background: var(--nav-bg); display: flex; align-items: center; position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(15px); border-bottom: 1px solid #252525; gap: 15px; }
+        header { 
+            padding: 15px 5%; 
+            background: var(--nav-bg); 
+            display: flex; 
+            align-items: center; 
+            position: sticky; 
+            top: 0; 
+            z-index: 1000; 
+            backdrop-filter: blur(15px); 
+            border-bottom: 1px solid #252525; 
+            gap: 15px; 
+        }
         .menu-btn { font-size: 22px; cursor: pointer; color: white; }
         .logo { font-size: 22px; font-weight: 900; color: var(--primary); text-decoration: none; flex-grow: 1; letter-spacing: 1px; }
 
         /* Sidebar Menu */
-        .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: var(--sidebar-bg); z-index: 2000; transition: 0.4s; overflow-y: auto; }
+        .sidebar { 
+            position: fixed; top: 0; left: -280px; width: 280px; height: 100%; 
+            background: var(--sidebar-bg); z-index: 2000; transition: 0.4s; overflow-y: auto; 
+        }
         .sidebar.active { left: 0; }
-        .sidebar-header { padding: 20px; background: #111; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        .sidebar-header { 
+            padding: 20px; background: #111; border-bottom: 1px solid #333; 
+            display: flex; justify-content: space-between; align-items: center; 
+        }
         .sidebar-menu { list-style: none; padding: 0; margin: 0; }
-        .sidebar-menu li a { display: flex; align-items: center; padding: 15px 20px; color: #ccc; text-decoration: none; border-bottom: 1px solid #252525; transition: 0.3s; }
+        .sidebar-menu li a { 
+            display: flex; align-items: center; padding: 15px 20px; color: #ccc; 
+            text-decoration: none; border-bottom: 1px solid #252525; transition: 0.3s; 
+        }
         .sidebar-menu li a:hover { background: #252525; color: white; }
         .sidebar-menu i { width: 30px; color: var(--primary); }
+
+        /* Genres Dropdown */
+        .submenu { display: none; background: #151515; list-style: none; padding: 0; }
+        .submenu li a { padding-left: 50px !important; font-size: 14px !important; }
+
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1500; display: none; }
         .overlay.active { display: block; }
 
-        /* Slider */
+        /* Slider & Search */
         .swiper { width: 100%; height: 260px; margin-bottom: 10px; }
         .swiper-slide img { width: 100%; height: 100%; object-fit: cover; }
-        
-        /* Search */
         .search-area { padding: 10px 5%; }
-        #searchInput { width: 100%; padding: 12px; border-radius: 5px; border: 1px solid #333; background: #1a1a1a; color: white; outline: none; box-sizing: border-box;}
+        #searchInput { 
+            width: 100%; padding: 12px; border-radius: 5px; border: 1px solid #333; 
+            background: #1a1a1a; color: white; outline: none; box-sizing: border-box;
+        }
 
         /* Movie Grid */
         .movie-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 10px 5% 50px; }
         .movie-card { background: var(--card-bg); border-radius: 6px; overflow: hidden; border: 1px solid #282828; cursor: pointer; position: relative; }
         .movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
         .badge { position: absolute; top: 5px; left: 5px; background: var(--primary); font-size: 9px; padding: 2px 5px; border-radius: 3px; font-weight: bold; }
-        .card-info { padding: 5px; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+        .card-info { padding: 5px; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; color: #ccc; }
 
         @media (min-width: 768px) { .swiper { height: 450px; } .movie-grid { grid-template-columns: repeat(6, 1fr); } }
     </style>
@@ -49,7 +89,7 @@
     <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <span style="font-weight: 900; color: var(--primary); font-size: 20px;">FASTSTREAM</span>
+            <span style="font-weight: 900; color: var(--primary);">FASTSTREAM</span>
             <i class="fas fa-times" onclick="toggleMenu()" style="cursor:pointer"></i>
         </div>
         <ul class="sidebar-menu">
@@ -58,6 +98,20 @@
             <li><a href="#" onclick="filterMenu('Hollywood')"><i class="fas fa-globe"></i> Hollywood</a></li>
             <li><a href="#" onclick="filterMenu('Hindi Dubbed')"><i class="fas fa-microphone"></i> Hindi Dubbed</a></li>
             <li><a href="#" onclick="filterMenu('South Indian')"><i class="fas fa-bolt"></i> South Hindi</a></li>
+            
+            <li class="dropdown">
+                <a href="javascript:void(0)" onclick="toggleDropdown()">
+                    <i class="fas fa-list"></i> GENRES 
+                    <i class="fas fa-chevron-down" style="margin-left:auto; font-size:12px;"></i>
+                </a>
+                <ul class="submenu" id="genreSubmenu">
+                    <li><a href="#" onclick="filterMenu('Action')">Action</a></li>
+                    <li><a href="#" onclick="filterMenu('Comedy')">Comedy</a></li>
+                    <li><a href="#" onclick="filterMenu('Drama')">Drama</a></li>
+                    <li><a href="#" onclick="filterMenu('Horror')">Horror</a></li>
+                </ul>
+            </li>
+
             <li><a href="request.html"><i class="fas fa-plus-circle"></i> Request Movie</a></li>
         </ul>
     </div>
@@ -83,7 +137,7 @@
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
     <script>
-        // ✅ Apnar add kora Firebase Config
+        // ✅ Apnar Firebase Config
         const firebaseConfig = {
           apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4",
           authDomain: "movie-project-b78b4.firebaseapp.com",
@@ -101,14 +155,18 @@
             document.getElementById('overlay').classList.toggle('active');
         }
 
-        // Fetching movies from database
+        function toggleDropdown() {
+            const sm = document.getElementById('genreSubmenu');
+            sm.style.display = sm.style.display === "block" ? "none" : "block";
+        }
+
         db.ref('movies').on('value', (snap) => {
             const grid = document.getElementById('movieGrid');
             const slider = document.getElementById('sliderWrapper');
             grid.innerHTML = ''; slider.innerHTML = '';
             
             if(!snap.exists()) {
-                grid.innerHTML = "<p style='grid-column: 1/-1; text-align:center;'>Database-e kono movie nei.</p>";
+                grid.innerHTML = "<p style='grid-column: 1/-1; text-align:center;'>No data found.</p>";
                 return;
             }
 
@@ -116,14 +174,10 @@
             snap.forEach((child) => {
                 const m = child.val();
                 const id = child.key;
-
-                // Slider items (Latest 5)
                 if(count < 5) {
                     slider.innerHTML += `<div class="swiper-slide" onclick="location.href='go.html?id=${id}'"><img src="${m.poster}"></div>`;
                     count++;
                 }
-
-                // Grid items
                 grid.innerHTML += `
                 <div class="movie-card" data-genre="${m.genre || ''}" onclick="location.href='go.html?id=${id}'">
                     <span class="badge">${m.quality || 'HD'}</span>
@@ -132,11 +186,8 @@
                 </div>`;
             });
 
-            // Re-initialize Swiper after data load
             new Swiper(".mySwiper", { 
-                loop: true, 
-                autoplay: { delay: 3500, disableOnInteraction: false }, 
-                pagination: { el: ".swiper-pagination", clickable: true } 
+                loop: true, autoplay: { delay: 3500 }, pagination: { el: ".swiper-pagination", clickable: true } 
             });
         });
 
