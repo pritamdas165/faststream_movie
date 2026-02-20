@@ -9,14 +9,14 @@
         body { background: #0a0a0a; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
         .box { background: #151515; padding: 30px; border-radius: 20px; border: 1px solid #222; text-align: center; width: 85%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .timer { font-size: 3rem; color: #e50914; margin: 20px 0; font-weight: bold; }
-        .btn { display: none; background: #e50914; color: white; padding: 15px; border-radius: 10px; text-decoration: none; font-weight: bold; cursor: pointer; border: none; width: 100%; font-size: 1rem; }
-        .btn:hover { background: #b20710; }
+        .btn { display: none; background: #e50914; color: white; padding: 15px; border-radius: 10px; text-decoration: none; font-weight: bold; cursor: pointer; border: none; width: 100%; font-size: 1.1rem; }
+        .btn:hover { background: #b20710; transform: scale(1.02); transition: 0.2s; }
     </style>
 </head>
 <body>
 
     <div class="box">
-        <div style="margin-bottom: 20px;">
+        <div style="margin-bottom: 20px; min-height: 50px;">
             <script>(function(s){s.dataset.zone='10632678',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
         </div>
         
@@ -30,7 +30,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <script>
-        // 1. Firebase Config (Only Once)
+        // 1. Firebase Initialization (Ekti baar-i hobe)
         const firebaseConfig = { 
             apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", 
             databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com" 
@@ -38,35 +38,35 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // 2. Get ID from URL
+        // 2. Movie ID Fetch from URL
         const urlParams = new URLSearchParams(window.location.search);
         const movieId = urlParams.get('id');
 
-        // 3. Main Logic
+        // 3. Main Link Generation Logic
         if (movieId) {
             db.ref('movies/' + movieId).once('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
-                    const finalDownloadUrl = data.download;
+                    const finalLink = data.download;
                     let timeLeft = 10;
-                    const timerText = document.getElementById('t');
+                    const timerDiv = document.getElementById('t');
                     const downloadBtn = document.getElementById('b');
 
-                    const timerInterval = setInterval(() => {
+                    const countdown = setInterval(() => {
                         timeLeft--;
-                        timerText.innerText = timeLeft;
+                        timerDiv.innerText = timeLeft;
 
                         if (timeLeft <= 0) {
-                            clearInterval(timerInterval);
-                            timerText.style.display = 'none';
+                            clearInterval(countdown);
+                            timerDiv.style.display = 'none';
                             document.getElementById('msg').innerText = "Link Ready!";
                             downloadBtn.style.display = 'block';
 
-                            // 4. Click Handler: Open Ad first, then Download
+                            // 4. Click Action: Ads open hobe, tarpore movie download shuru hobe
                             downloadBtn.onclick = function() {
                                 setTimeout(() => {
-                                    window.location.href = finalDownloadUrl;
-                                }, 1500); 
+                                    window.location.href = finalLink;
+                                }, 2000); 
                             };
                         }
                     }, 1000);
@@ -75,7 +75,7 @@
                 }
             });
         } else {
-            document.getElementById('msg').innerText = "Invalid Request!";
+            document.getElementById('msg').innerText = "Invalid Movie ID!";
         }
     </script>
 </body>
