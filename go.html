@@ -1,41 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="https://quge5.com/88/tag.min.js" data-zone="212786" async data-cfasync="false"></script>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Movie Details</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        body { background: #0a0a0a; color: white; font-family: sans-serif; margin: 0; padding-bottom: 30px; }
-        header { padding: 15px; background: #111; display: flex; align-items: center; border-bottom: 1px solid #222; }
-        .container { padding: 20px; text-align: center; }
-        .poster { width: 100%; max-width: 250px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .btn { display: block; padding: 15px; margin: 20px 0; border-radius: 10px; text-decoration: none; font-weight: bold; text-align: center; }
-        .btn-down { background: #e50914; color: white; }
-        .ss-img { width: 100%; border-radius: 10px; margin-top: 15px; border: 1px solid #333; }
+        body { background: #0a0a0a; color: white; font-family: sans-serif; margin: 0; text-align: center; }
+        .btn { display: block; padding: 18px; margin: 20px; background: #e50914; color: white; border-radius: 12px; text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
-    <header><a href="index.html" style="color:white; margin-right:20px;"><i class="fas fa-arrow-left"></i></a> <span>Movie Details</span></header>
-    <div class="container" id="loader">Loading...</div>
+    <div id="loader" style="padding:20px;">
+        <img id="poster" style="width:220px; border-radius:15px; margin-top:20px;">
+        <h1 id="title"></h1>
+        <a href="https://omg10.com/4/10626413" target="_blank" onclick="setTimeout(()=> { window.location.href='download.html?id=' + id }, 500)" class="btn"><i class="fas fa-download"></i> GO TO DOWNLOAD PAGE</a>
+    </div>
+
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script>
-        const firebaseConfig = { apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com" };
-        firebase.initializeApp(firebaseConfig); const db = firebase.database();
         const id = new URLSearchParams(window.location.search).get('id');
-        if(id) {
-            db.ref('movies/' + id).on('value', snap => {
-                const m = snap.val();
-                document.getElementById('loader').innerHTML = `
-                    <img src="${m.poster}" class="poster">
-                    <h1>${m.title}</h1>
-                    <p style="color:#aaa;">Genre: ${m.genre} | Quality: ${m.quality}</p>
-                    <a href="download.html?id=${id}" class="btn btn-down"><i class="fas fa-download"></i> GO TO DOWNLOAD PAGE</a>
-                    <h3>Screenshots</h3>
-                    <img src="${m.screenshots ? m.screenshots[0] : ''}" class="ss-img">
-                `;
-            });
-        }
+        firebase.initializeApp({ apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com" });
+        firebase.database().ref('movies/' + id).on('value', snap => {
+            document.getElementById('title').innerText = snap.val().title;
+            document.getElementById('poster').src = snap.val().poster;
+        });
     </script>
 </body>
 </html>
