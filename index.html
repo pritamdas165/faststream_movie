@@ -1,85 +1,622 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FastStream | Home</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        :root { --primary: #e50914; --bg: #121212; --card-bg: #1e1e1e; --nav-bg: rgba(20, 20, 20, 0.95); --sidebar-bg: #1a1a1a; }
-        body { font-family: Arial, sans-serif; background: var(--bg); color: white; margin: 0; overflow-x: hidden; }
-        header { padding: 15px 5%; background: var(--nav-bg); display: flex; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #252525; }
-        .logo { font-size: 22px; font-weight: 900; color: var(--primary); text-decoration: none; flex-grow: 1; margin-left: 15px; }
-        .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: var(--sidebar-bg); z-index: 2000; transition: 0.4s; overflow-y: auto; }
-        .sidebar.active { left: 0; }
-        .sidebar-header { padding: 20px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; }
-        .sidebar-menu { list-style: none; padding: 0; }
-        .sidebar-menu li a { display: flex; align-items: center; padding: 15px 20px; color: #ccc; text-decoration: none; border-bottom: 1px solid #252525; cursor: pointer; }
-        .sidebar-menu i { width: 30px; color: var(--primary); }
-        .submenu { display: none; background: #111; list-style: none; padding: 0; }
-        .submenu li a { padding-left: 50px !important; }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1500; display: none; }
-        .overlay.active { display: block; }
-        .swiper { width: 100%; height: 260px; }
-        .movie-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px 5%; }
-        .movie-card { background: var(--card-bg); border-radius: 6px; overflow: hidden; border: 1px solid #282828; cursor: pointer; }
-        .movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
-        .card-info { padding: 5px; font-size: 11px; text-align: center; }
-    </style>
+  <meta charset="UTF-8">
+  <title>User Panel – Movie Site</title>
+  <!-- FontAwesome for icons -->
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js"></script>
+  <style>
+    /* Global dark Netflix-style theme */
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #141414;
+      color: #f0f0f0;
+      overflow-x: hidden;
+    }
+    h2, h3 { margin: 0; }
+    /* Header with logo and search */
+    header {
+      display: flex;
+      align-items: center;
+      background-color: #111;
+      padding: 10px 20px;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1000;
+    }
+    header img.logo {
+      height: 40px;
+      margin-right: 20px;
+    }
+    header input.search {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 20px;
+      border: none;
+      outline: none;
+      font-size: 16px;
+      background-color: #222;
+      color: #fff;
+    }
+    /* Carousel container */
+    .carousel-container {
+      perspective: 1000px;
+      margin-top: 80px; /* below header */
+      text-align: center;
+      overflow: hidden;
+      position: relative;
+      height: 300px;
+    }
+    .carousel {
+      width: 80%;
+      margin: 0 auto;
+      transform-style: preserve-3d;
+      animation: rotate 20s linear infinite;
+      position: relative;
+    }
+    .carousel:hover {
+      animation-play-state: paused;
+    }
+    .carousel img {
+      position: absolute;
+      width: 100%;
+      max-width: 500px;
+      left: 50%;
+      top: 50%;
+      transform-origin: 50% 50%;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      border: 2px solid #222;
+    }
+    /* Positioning 5 carousel images around Y-axis */
+    .carousel img:nth-child(1) { transform: translate(-50%, -50%) rotateY(0deg) translateZ(400px); }
+    .carousel img:nth-child(2) { transform: translate(-50%, -50%) rotateY(72deg) translateZ(400px); }
+    .carousel img:nth-child(3) { transform: translate(-50%, -50%) rotateY(144deg) translateZ(400px); }
+    .carousel img:nth-child(4) { transform: translate(-50%, -50%) rotateY(216deg) translateZ(400px); }
+    .carousel img:nth-child(5) { transform: translate(-50%, -50%) rotateY(288deg) translateZ(400px); }
+    @keyframes rotate {
+      from { transform: translateZ(-200px) rotateY(0deg); }
+      to { transform: translateZ(-200px) rotateY(-360deg); }
+    }
+    /* Genre chips */
+    .genre-chips {
+      display: flex;
+      overflow-x: auto;
+      padding: 10px;
+      gap: 10px;
+      background-color: #111;
+      margin-top: 20px;
+      white-space: nowrap;
+    }
+    .genre-chips .chip {
+      flex: 0 0 auto;
+      background: #222;
+      padding: 8px 15px;
+      border-radius: 20px;
+      cursor: pointer;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .genre-chips .chip:hover, .genre-chips .chip.active {
+      background: #444;
+    }
+    /* Movie grid */
+    .movies-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 15px;
+      padding: 20px;
+      margin-bottom: 60px; /* for bottom nav */
+    }
+    .movie-item {
+      position: relative;
+      cursor: pointer;
+      outline: none;
+    }
+    .movie-item img.poster {
+      width: 100%;
+      display: block;
+      border-radius: 5px;
+    }
+    .movie-item .overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      padding: 10px;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+      font-size: 14px;
+      border-radius: 0 0 5px 5px;
+    }
+    .movie-item:hover .overlay,
+    .movie-item:focus .overlay {
+      transform: translateY(0);
+    }
+    .movie-item .overlay h3 {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.2;
+    }
+    .movie-item .overlay .rating {
+      font-size: 14px;
+      margin-top: 5px;
+    }
+    /* Modals (common styles) */
+    .modal {
+      display: none; /* hidden by default */
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      background-color: rgba(0,0,0,0.9);
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal.active { display: flex; }
+    .modal-content {
+      background: #222;
+      padding: 20px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 800px;
+      color: #fff;
+      max-height: 90%;
+      overflow-y: auto;
+      position: relative;
+    }
+    .modal-content h2 {
+      margin-top: 0;
+    }
+    .modal-content .close-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: #fff;
+      cursor: pointer;
+    }
+    /* Detail modal layout */
+    .detail-modal .video-container {
+      width: 100%;
+      height: 0;
+      padding-bottom: 56.25%; /* 16:9 aspect ratio */
+      position: relative;
+      margin-bottom: 15px;
+    }
+    .detail-modal iframe {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      left: 0; top: 0;
+      border: none;
+    }
+    .detail-modal .info {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .detail-modal .info img.poster-large {
+      width: 100%;
+      max-width: 200px;
+      float: left;
+      margin-right: 15px;
+      border-radius: 5px;
+    }
+    .detail-modal .info h2 {
+      margin: 0;
+    }
+    .detail-modal .info .genres, .detail-modal .info .rating {
+      margin-top: 5px;
+      font-size: 14px;
+    }
+    .detail-modal .screenshots {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      margin: 10px 0;
+    }
+    .detail-modal .screenshots img {
+      width: 120px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .detail-modal .description {
+      clear: both;
+      margin-top: 10px;
+    }
+    .detail-modal .buttons {
+      margin-top: 15px;
+    }
+    .detail-modal .buttons button {
+      background: #e50914;
+      color: #fff;
+      border: none;
+      padding: 10px 15px;
+      margin-right: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .detail-modal .buttons button.secondary {
+      background: #333;
+    }
+    /* Bottom navigation bar */
+    .bottom-nav {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: #111;
+      padding: 10px 0;
+      z-index: 1000;
+    }
+    .bottom-nav i {
+      font-size: 24px;
+      color: #777;
+    }
+    .bottom-nav i.active {
+      color: #e50914;
+    }
+    /* Settings and login modals */
+    .modal input[type="text"],
+    .modal input[type="email"],
+    .modal input[type="password"] {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0 15px 0;
+      border: none;
+      border-radius: 4px;
+    }
+    .modal button {
+      padding: 10px 15px;
+      background: #e50914;
+      border: none;
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .modal label.switch {
+      display: inline-block;
+      position: relative;
+      width: 50px;
+      height: 24px;
+    }
+    .modal label.switch input {
+      display: none;
+    }
+    .modal label.switch .slider {
+      position: absolute;
+      cursor: pointer;
+      background-color: #ccc;
+      border-radius: 24px;
+      top: 0; left: 0; right: 0; bottom: 0;
+      transition: 0.4s;
+    }
+    .modal label.switch .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.4s;
+      border-radius: 50%;
+    }
+    .modal label.switch input:checked + .slider {
+      background-color: #2196F3;
+    }
+    .modal label.switch input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+      header img.logo { height: 30px; }
+      .carousel img { max-width: 300px; }
+      .detail-modal .info { flex-direction: column; }
+      .detail-modal .info img.poster-large { float: none; margin: 0 auto 15px auto; display: block; }
+    }
+  </style>
 </head>
 <body>
-    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header"><span style="color:var(--primary); font-weight:900;">FASTSTREAM</span><i class="fas fa-times" onclick="toggleMenu()"></i></div>
-        <ul class="sidebar-menu">
-            <li><a onclick="filterMenu('all')"><i class="fas fa-home"></i> Home</a></li>
-            <li><a onclick="filterMenu('Bollywood')"><i class="fas fa-film"></i> Bollywood</a></li>
-            <li><a onclick="filterMenu('Hollywood')"><i class="fas fa-globe"></i> Hollywood</a></li>
-            <li><a onclick="filterMenu('Web Series')"><i class="fas fa-tv"></i> Web Series</a></li>
-            <li><a onclick="filterMenu('18+')"><i class="fas fa-exclamation-triangle"></i> 18+</a></li>
-            <li><a onclick="toggleDropdown()"><i class="fas fa-list"></i> GENRES <i class="fas fa-chevron-down" style="margin-left:auto"></i></a>
-                <ul class="submenu" id="genreSub">
-                    <li><a onclick="filterMenu('Action')">Action</a></li>
-                    <li><a onclick="filterMenu('Horror')">Horror</a></li>
-                    <li><a onclick="filterMenu('Comedy')">Comedy</a></li>
-                </ul>
-            </li>
-        </ul>
+  <!-- Header with logo and search bar -->
+  <header>
+    <img src="logo-placeholder.png" alt="Site Logo" class="logo">
+    <input type="text" placeholder="Search movies..." class="search" aria-label="Search movies">
+  </header>
+
+  <!-- 3D Rotating Carousel of latest 5 movies -->
+  <div class="carousel-container" aria-label="Latest movies carousel">
+    <div class="carousel" id="carousel">
+      <!-- Images will be populated via JS (latest 5) -->
     </div>
-    <header><i class="fas fa-bars" onclick="toggleMenu()" style="font-size:22px; cursor:pointer"></i><a class="logo">FASTSTREAM</a></header>
-    <div class="swiper mySwiper"><div class="swiper-wrapper" id="sliderWrapper"></div></div>
-    <div class="movie-grid" id="movieGrid"></div>
+    <!-- Optional manual controls -->
+    <button id="carouselPrev" aria-label="Previous" style="position:absolute;left:5%;top:50%;font-size:24px;background:none;border:none;color:#fff;cursor:pointer;">&#10094;</button>
+    <button id="carouselNext" aria-label="Next" style="position:absolute;right:5%;top:50%;font-size:24px;background:none;border:none;color:#fff;cursor:pointer;">&#10095;</button>
+  </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <script>
-        const firebaseConfig = { apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", authDomain: "movie-project-b78b4.firebaseapp.com", databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com", projectId: "movie-project-b78b4", storageBucket: "movie-project-b78b4.firebasestorage.app", messagingSenderId: "819696212001", appId: "1:819696212001:web:379b19305c6d604b2deb60" };
-        firebase.initializeApp(firebaseConfig); const db = firebase.database();
+  <!-- Genre filter chips (horizontal scroll) -->
+  <div class="genre-chips" id="genreChips" aria-label="Filter by genre">
+    <!-- Example chips; these will be generated from movie data -->
+    <div class="chip active" data-genre="All">All</div>
+    <!-- More genre chips via JS -->
+  </div>
 
-        function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); document.getElementById('overlay').classList.toggle('active'); }
-        function toggleDropdown() { const s = document.getElementById('genreSub'); s.style.display = (s.style.display === "block") ? "none" : "block"; }
+  <!-- Responsive Movie Grid -->
+  <div class="movies-grid" id="moviesGrid" aria-label="Movie grid">
+    <!-- Movie items populated by JavaScript -->
+  </div>
 
-        db.ref('movies').on('value', (snap) => {
-            const grid = document.getElementById('movieGrid'); const slider = document.getElementById('sliderWrapper');
-            grid.innerHTML = ''; slider.innerHTML = '';
-            snap.forEach((child) => {
-                const m = child.val(); const id = child.key;
-                slider.innerHTML += `<div class="swiper-slide" onclick="location.href='go.html?id=${id}'"><img src="${m.poster}"></div>`;
-                grid.innerHTML += `<div class="movie-card" data-genre="${m.genre}" onclick="location.href='go.html?id=${id}'"><img src="${m.poster}"><div class="card-info">${m.title}</div></div>`;
-            });
-            new Swiper(".mySwiper", { loop: true, autoplay: { delay: 3000 } });
-        });
+  <!-- Movie Detail Modal -->
+  <div class="modal detail-modal" id="detailModal" role="dialog" aria-modal="true" aria-labelledby="detailTitle" aria-describedby="detailDesc">
+    <div class="modal-content">
+      <button class="close-btn" id="detailClose" aria-label="Close detail view">&times;</button>
+      <div class="video-container" id="videoContainer">
+        <!-- Embedded video iframe -->
+      </div>
+      <div class="info">
+        <img src="" alt="Movie Poster" class="poster-large" id="detailPoster">
+        <h2 id="detailTitle"></h2>
+        <div class="genres" id="detailGenres"></div>
+        <div class="rating" id="detailRating"></div>
+        <div class="screenshots" id="screenshotGallery">
+          <!-- Screenshot thumbnails -->
+        </div>
+        <p class="description" id="detailDesc"></p>
+        <div class="buttons">
+          <button id="playNowBtn">Play Now</button>
+          <button id="downloadBtn">Download</button>
+          <button class="secondary" id="favoriteBtn"><i class="fas fa-heart"></i> Add to Favorites</button>
+          <button class="secondary" id="reportBtn"><i class="fas fa-flag"></i> Report Broken Link</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-        function filterMenu(genre) {
-            toggleMenu();
-            const cards = document.querySelectorAll('.movie-card');
-            cards.forEach(c => {
-                const g = c.getAttribute('data-genre').toLowerCase();
-                c.style.display = (genre === 'all' || g.includes(genre.toLowerCase())) ? "block" : "none";
-            });
+  <!-- Settings Modal -->
+  <div class="modal" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="modal-content">
+      <button class="close-btn" id="settingsClose" aria-label="Close settings">&times;</button>
+      <h2 id="settingsTitle">Settings</h2>
+      <div style="margin-top:10px;">
+        <label>
+          <input type="checkbox" id="themeToggle"> Dark Theme
+        </label>
+      </div>
+      <div style="margin-top:20px;">
+        <strong>Account:</strong> <span id="userEmail">Not signed in</span>
+      </div>
+      <div style="margin-top:20px;">
+        <h3>Favorites</h3>
+        <ul id="favoritesList">
+          <!-- Favorite movies list -->
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Login/Signup Modal -->
+  <div class="modal" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+    <div class="modal-content">
+      <button class="close-btn" id="authClose" aria-label="Close authentication">&times;</button>
+      <h2 id="authTitle">Login / Sign Up</h2>
+      <div id="authForms">
+        <div id="loginForm">
+          <input type="email" id="loginEmail" placeholder="Email" aria-label="Email">
+          <input type="password" id="loginPassword" placeholder="Password" aria-label="Password">
+          <button id="loginBtn">Login</button>
+          <p>Don't have an account? <a href="#" id="showSignup">Sign up</a></p>
+        </div>
+        <div id="signupForm" style="display:none;">
+          <input type="email" id="signupEmail" placeholder="Email" aria-label="Email">
+          <input type="password" id="signupPassword" placeholder="Password" aria-label="Password">
+          <button id="signupBtn">Sign Up</button>
+          <p>Already have an account? <a href="#" id="showLogin">Log in</a></p>
+        </div>
+      </div>
+      <div id="authError" style="color:red;margin-top:10px;"></div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation Bar -->
+  <nav class="bottom-nav" aria-label="Main navigation">
+    <i class="fas fa-home active" id="navHome" aria-label="Home"></i>
+    <i class="fas fa-search" id="navSearch" aria-label="Search"></i>
+    <i class="fas fa-heart" id="navFavorites" aria-label="Favorites"></i>
+    <i class="fas fa-cog" id="navSettings" aria-label="Settings"></i>
+  </nav>
+
+  <script>
+    // Firebase configuration (placeholder values)
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      databaseURL: "YOUR_DB_URL",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    // Helper: Convert video URLs to embed URLs (YouTube/Vimeo)
+    function convertToEmbedUrl(url) {
+      try {
+        const parsed = new URL(url);
+        // YouTube short link
+        if (parsed.hostname.includes('youtu.be')) {
+          const id = parsed.pathname.slice(1);
+          return `https://www.youtube.com/embed/${id}`;
         }
-    </script>
-</body>
-</html>
+        // YouTube regular link
+        if (parsed.hostname.includes('youtube.com')) {
+          const id = parsed.searchParams.get('v');
+          return id ? `https://www.youtube.com/embed/${id}` : url;
+        }
+        // Vimeo link
+        if (parsed.hostname.includes('vimeo.com')) {
+          const id = parsed.pathname.split('/')[1];
+          return `https://player.vimeo.com/video/${id}`;
+        }
+      } catch (e) {
+        console.error('Invalid video URL', e);
+      }
+      return url;
+    }
+
+    // Load movies from Firebase and populate carousel and grid
+    const moviesRef = db.ref('movies');
+    moviesRef.on('value', snapshot => {
+      const movies = [];
+      snapshot.forEach(child => {
+        const movie = child.val();
+        movie.id = child.key;
+        movies.push(movie);
+      });
+      // Sort or filter as needed; here assume movies array ready
+      updateCarousel(movies.slice(0,5)); // latest 5 for carousel
+      populateGenres(movies);
+      populateGrid(movies);
+    });
+
+    // Update carousel images
+    function updateCarousel(movies) {
+      const carousel = document.getElementById('carousel');
+      carousel.innerHTML = '';
+      movies.forEach((movie, i) => {
+        const img = document.createElement('img');
+        img.src = movie.poster || '';
+        img.alt = movie.title + ' Poster';
+        img.tabIndex = 0;
+        img.dataset.index = i;
+        img.addEventListener('click', () => showDetail(movie));
+        carousel.appendChild(img);
+      });
+      // Carousel manual controls
+      const prevBtn = document.getElementById('carouselPrev');
+      const nextBtn = document.getElementById('carouselNext');
+      let angle = 0;
+      prevBtn.onclick = () => {
+        angle += 72;
+        carousel.style.transform = `translateZ(-200px) rotateY(${angle}deg)`;
+      };
+      nextBtn.onclick = () => {
+        angle -= 72;
+        carousel.style.transform = `translateZ(-200px) rotateY(${angle}deg)`;
+      };
+    }
+
+    // Populate genre chips (unique genres)
+    function populateGenres(movies) {
+      const genreSet = new Set();
+      movies.forEach(m => { if (m.genre) genreSet.add(m.genre); });
+      const container = document.getElementById('genreChips');
+      genreSet.forEach(genre => {
+        const chip = document.createElement('div');
+        chip.className = 'chip';
+        chip.textContent = genre;
+        chip.dataset.genre = genre;
+        chip.onclick = () => {
+          document.querySelectorAll('.genre-chips .chip').forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+          filterGenre(genre);
+        };
+        container.appendChild(chip);
+      });
+    }
+
+    // Filter movies by genre
+    function filterGenre(genre) {
+      const items = document.querySelectorAll('.movie-item');
+      items.forEach(item => {
+        const g = item.dataset.genre;
+        if (genre === 'All' || g === genre) {
+          item.style.display = '';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    }
+
+    // Populate movie grid
+    function populateGrid(movies) {
+      const grid = document.getElementById('moviesGrid');
+      grid.innerHTML = '';
+      movies.forEach(movie => {
+        const div = document.createElement('div');
+        div.className = 'movie-item';
+        div.tabIndex = 0;
+        div.setAttribute('aria-label', movie.title);
+        div.dataset.genre = movie.genre || '';
+        div.onclick = () => showDetail(movie);
+        div.onkeypress = e => { if (e.key === 'Enter') showDetail(movie); };
+        const img = document.createElement('img');
+        img.className = 'poster';
+        img.src = movie.poster || '';
+        img.alt = movie.title + ' Poster';
+        const overlay = document.createElement('div');
+        overlay.className = 'overlay';
+        const title = document.createElement('h3');
+        title.textContent = movie.title;
+        const rating = document.createElement('div');
+        rating.className = 'rating';
+        rating.innerHTML = '⭐'.repeat(movie.rating || 0);
+        overlay.appendChild(title);
+        overlay.appendChild(rating);
+        div.appendChild(img);
+        div.appendChild(overlay);
+        grid.appendChild(div);
+      });
+    }
+
+    // Show movie detail modal
+    function showDetail(movie) {
+      document.getElementById('detailTitle').textContent = movie.title;
+      document.getElementById('detailPoster').src = movie.poster || '';
+      document.getElementById('detailGenres').textContent = 'Genre: ' + (movie.genre || 'N/A');
+      document.getElementById('detailRating').textContent = 'Rating: ' + (movie.rating || 'N/A');
+      document.getElementById('detailDesc').textContent = movie.description || '';
+      // Video embed
+      const container = document.getElementById('videoContainer');
+      container.innerHTML = '';
+      if (movie.videoURL) {
+        const iframe = document.createElement('iframe');
+        iframe.src = convertToEmbedUrl(movie.videoURL);
+        iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+        container.appendChild(iframe);
+      }
+      // Screenshots
+      const gallery = document.getElementById('screenshotGallery');
+      gallery.innerHTML = '';
+      (movie.screenshots || []).forEach(src => {
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = 'Screenshot';
+        img.onclick = () => window.open(src, '_blank');
+        gallery.appendChild(img);
+      });
+      // Show modal
+      document.getElementById('detailModal').classList.add('active');
+    }
+    document.getElementById('detailClose').onclick = () => {
+      document.getElementById('detailModal').classL
