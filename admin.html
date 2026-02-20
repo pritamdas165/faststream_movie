@@ -2,539 +2,111 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Admin Dashboard | Fast8Movie</title>
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
+    <title>Admin Dashboard - Fast8Movie</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-
     <style>
-        :root {
-            --primary-bg: #141414;
-            --secondary-bg: #1f1f1f;
-            --card-bg: #2a2a2a;
-            --accent: #e50914;
-            --text-main: #e5e5e5;
-            --text-dim: #999999;
-            --success: #28a745;
-            --info: #007bff;
-            --transition: all 0.3s ease;
-        }
-
-        [data-theme="light"] {
-            --primary-bg: #f4f4f4;
-            --secondary-bg: #ffffff;
-            --card-bg: #e0e0e0;
-            --text-main: #141414;
-            --text-dim: #555555;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-
-        body {
-            background-color: var(--primary-bg);
-            color: var(--text-main);
-            transition: var(--transition);
-        }
-
-        /* --- Auth Page --- */
-        #auth-container {
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://assets.nflxext.com/ffe/siteui/vlv3/f841d4c7-10e1-40af-bca1-07e3f8eb14b8/web/IN-en-20220502-popsignuptwoweeks-perspective_alpha_website_medium.jpg');
-            background-size: cover;
-        }
-
-        .login-card {
-            background: rgba(0, 0, 0, 0.85);
-            padding: 40px;
-            border-radius: 8px;
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-        }
-
-        .login-card h2 { margin-bottom: 25px; color: var(--accent); }
-
-        .input-group { margin-bottom: 15px; text-align: left; }
-        label { display: block; margin-bottom: 5px; font-size: 0.9rem; color: var(--text-dim); }
-        
-        input, select, textarea {
-            width: 100%;
-            padding: 12px;
-            background: #333;
-            border: 1px solid transparent;
-            border-radius: 4px;
-            color: white;
-            outline: none;
-        }
-        
-        [data-theme="light"] input, [data-theme="light"] select, [data-theme="light"] textarea {
-            background: #fff; border: 1px solid #ccc; color: #333;
-        }
-
-        .btn-primary {
-            width: 100%;
-            padding: 12px;
-            background: var(--accent);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        /* --- Main Dashboard --- */
-        #admin-dashboard { display: none; }
-
-        header {
-            position: sticky;
-            top: 0;
-            background: var(--secondary-bg);
-            padding: 15px 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 100;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        }
-
-        .header-controls { display: flex; gap: 15px; align-items: center; }
-
-        .container { max-width: 1200px; margin: 30px auto; padding: 0 15px; }
-
-        /* --- Form Section --- */
-        .admin-section {
-            background: var(--secondary-bg);
-            padding: 25px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-        }
-
-        .full-width { grid-column: 1 / -1; }
-
-        .form-actions {
-            margin-top: 20px;
-            display: flex;
-            gap: 10px;
-        }
-
-        /* --- Manage Movies --- */
-        .search-bar {
-            margin-bottom: 20px;
-            position: relative;
-        }
-
-        .movie-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .movie-item {
-            background: var(--card-bg);
-            padding: 15px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            transition: var(--transition);
-        }
-
-        .movie-item:hover { transform: translateX(5px); }
-
-        .movie-thumb {
-            width: 80px; height: 110px;
-            object-fit: cover;
-            border-radius: 4px;
-        }
-
-        .movie-info { flex: 1; }
-        .movie-info h4 { margin-bottom: 5px; }
-        .movie-info p { font-size: 0.85rem; color: var(--text-dim); }
-
-        .badges { display: flex; gap: 8px; margin-top: 8px; }
-        .badge {
-            padding: 4px 8px;
-            font-size: 0.7rem;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-        .bg-blue { background: var(--info); color: white; }
-        .bg-green { background: var(--success); color: white; }
-
-        .action-btns { display: flex; gap: 10px; }
-        .icon-btn {
-            width: 35px; height: 35px;
-            border-radius: 50%;
-            border: none;
-            cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            color: white;
-        }
-        .btn-edit { background: var(--success); }
-        .btn-delete { background: var(--accent); }
-
-        /* --- Reports Section --- */
-        .report-item {
-            background: #3a1616;
-            border-left: 4px solid var(--accent);
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 4px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        /* --- Toast Notification --- */
-        #toast {
-            position: fixed;
-            bottom: 20px; right: 20px;
-            padding: 15px 25px;
-            border-radius: 4px;
-            color: white;
-            display: none;
-            z-index: 1000;
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-
-        /* Mobile Responsive */
-        @media (max-width: 768px) {
-            .form-grid { grid-template-columns: 1fr; }
-            .movie-item { flex-direction: column; text-align: center; }
-            .action-btns { justify-content: center; }
-            header h1 { font-size: 1.2rem; }
-        }
+        body { background: #141414; color: white; font-family: sans-serif; padding: 20px; }
+        .form-container { background: #1f1f1f; padding: 20px; border-radius: 10px; max-width: 600px; margin: 0 auto; }
+        input, select, textarea { width: 100%; padding: 10px; margin: 10px 0; background: #333; border: 1px solid #444; color: white; border-radius: 5px; }
+        button { width: 100%; padding: 12px; background: #e50914; border: none; color: white; font-weight: bold; cursor: pointer; border-radius: 5px; }
+        .movie-item { background: #2a2a2a; padding: 10px; margin: 10px 0; display: flex; align-items: center; justify-content: space-between; border-radius: 5px; }
+        .thumb { width: 50px; height: 70px; object-fit: cover; }
     </style>
 </head>
-<body data-theme="dark">
+<body>
 
-    <div id="loading-screen" style="position:fixed; top:0; left:0; width:100%; height:100%; background:var(--primary-bg); z-index:9999; display:flex; justify-content:center; align-items:center;">
-        <i class="fas fa-circle-notch fa-spin fa-3x" style="color:var(--accent)"></i>
+    <div class="form-container" id="login-box">
+        <h2>Admin Login</h2>
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="pass" placeholder="Password">
+        <button onclick="login()">Login</button>
     </div>
 
-    <div id="toast"></div>
-
-    <section id="auth-container">
-        <div class="login-card">
-            <h2><i class="fas fa-user-shield"></i> Admin Login</h2>
-            <div class="input-group">
-                <label>Email</label>
-                <input type="email" id="login-email" placeholder="admin@fast8movie.com">
-            </div>
-            <div class="input-group">
-                <label>Password</label>
-                <input type="password" id="login-pass" placeholder="••••••••">
-            </div>
-            <button class="btn-primary" onclick="handleLogin()">Sign In</button>
+    <div id="dashboard" style="display:none;">
+        <div class="form-container">
+            <h2>Add New Movie</h2>
+            <input type="text" id="title" placeholder="Movie Title">
+            <select id="genre">
+                <option value="Action">Action</option>
+                <option value="Comedy">Comedy</option>
+                <option value="Drama">Drama</option>
+            </select>
+            <input type="text" id="poster" placeholder="Poster URL">
+            <input type="text" id="play" placeholder="Play URL">
+            <input type="text" id="down" placeholder="Download Link">
+            <textarea id="desc" placeholder="Description"></textarea>
+            <button onclick="addMovie()">Add Movie</button>
         </div>
-    </section>
 
-    <section id="admin-dashboard">
-        <header>
-            <h1 style="color:var(--accent)"><i class="fas fa-film"></i> Fast8 Admin</h1>
-            <div class="header-controls">
-                <button class="icon-btn" onclick="toggleTheme()" style="background:var(--card-bg)">
-                    <i class="fas fa-moon" id="theme-icon"></i>
-                </button>
-                <button class="btn-primary" onclick="handleLogout()" style="width:auto; padding:8px 15px; margin:0;">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </button>
-            </div>
-        </header>
-
-        <div class="container">
-            <div class="admin-section">
-                <h3 id="form-title" style="margin-bottom:20px;">Add New Movie</h3>
-                <form id="movie-form">
-                    <input type="hidden" id="edit-id">
-                    <div class="form-grid">
-                        <div class="input-group">
-                            <label>Movie Title *</label>
-                            <input type="text" id="m-title" required>
-                        </div>
-                        <div class="input-group">
-                            <label>Genre *</label>
-                            <select id="m-genre" required>
-                                <option value="Action">Action</option>
-                                <option value="Comedy">Comedy</option>
-                                <option value="Drama">Drama</option>
-                                <option value="Horror">Horror</option>
-                                <option value="Sci-Fi">Sci-Fi</option>
-                                <option value="Romance">Romance</option>
-                                <option value="Thriller">Thriller</option>
-                                <option value="Animation">Animation</option>
-                                <option value="Adventure">Adventure</option>
-                                <option value="Fantasy">Fantasy</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label>Poster URL *</label>
-                            <input type="url" id="m-poster" placeholder="https://..." required>
-                        </div>
-                        <div class="input-group">
-                            <label>Screenshots URL (Comma separated) *</label>
-                            <input type="text" id="m-screens" placeholder="link1, link2, link3" required>
-                        </div>
-                        <div class="input-group">
-                            <label>Play Online URL *</label>
-                            <input type="url" id="m-play" placeholder="Streaming link" required>
-                        </div>
-                        <div class="input-group">
-                            <label>Download Links (480p, 720p, 1080p...) *</label>
-                            <input type="text" id="m-download" placeholder="link1, link2" required>
-                        </div>
-                        <div class="input-group full-width">
-                            <label>Cast (Actors) *</label>
-                            <input type="text" id="m-cast" placeholder="Vin Diesel, Paul Walker..." required>
-                        </div>
-                        <div class="input-group full-width">
-                            <label>Description *</label>
-                            <textarea id="m-desc" style="height:100px;" required></textarea>
-                        </div>
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn-primary" id="submit-btn" style="width:auto; padding:12px 30px;">Add Movie</button>
-                        <button type="button" class="btn-primary" id="cancel-btn" style="width:auto; background:#555; display:none;" onclick="resetForm()">Cancel</button>
-                    </div>
-                </form>
-            </div>
-
-            <div class="admin-section">
-                <h3>Manage Movies</h3>
-                <div class="search-bar">
-                    <input type="text" id="admin-search" placeholder="Search by title or genre..." style="padding-left:40px;">
-                    <i class="fas fa-search" style="position:absolute; left:15px; top:50%; transform:translateY(-50%); color:var(--text-dim)"></i>
-                </div>
-                <div id="admin-movie-list" class="movie-list">
-                    </div>
-            </div>
-
-            <div class="admin-section">
-                <h3>Broken Link Reports</h3>
-                <div id="reports-list" style="margin-top:15px;">
-                    </div>
-            </div>
-        </div>
-    </section>
+        <h2 style="text-align:center; margin-top:30px;">Manage Movies</h2>
+        <div id="movie-list" style="max-width:600px; margin: 0 auto;"></div>
+    </div>
 
     <script>
-        // --- 1. FIREBASE CONFIG ---
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4",
+            authDomain: "movie-project-b78b4.firebaseapp.com",
+            databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com",
+            projectId: "movie-project-b78b4",
+            storageBucket: "movie-project-b78b4.firebasestorage.app",
+            messagingSenderId: "819696212001",
+            appId: "1:819696212001:web:379b19305c6d604b2deb60"
         };
 
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.database();
 
-        // --- 2. AUTHENTICATION ---
-        auth.onAuthStateChanged(user => {
-            document.getElementById('loading-screen').style.display = 'none';
-            if (user) {
-                document.getElementById('auth-container').style.display = 'none';
-                document.getElementById('admin-dashboard').style.display = 'block';
-                loadData();
-            } else {
-                document.getElementById('auth-container').style.display = 'flex';
-                document.getElementById('admin-dashboard').style.display = 'none';
-            }
-        });
-
-        async function handleLogin() {
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-pass').value;
-            try {
-                await auth.signInWithEmailAndPassword(email, pass);
-                showToast("Login Successful", "success");
-            } catch (err) {
-                showToast(err.message, "error");
-            }
+        function login() {
+            const e = document.getElementById('email').value;
+            const p = document.getElementById('pass').value;
+            auth.signInWithEmailAndPassword(e, p).then(() => {
+                document.getElementById('login-box').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                loadMovies();
+            }).catch(err => alert(err.message));
         }
 
-        function handleLogout() {
-            auth.signOut();
-        }
-
-        // --- 3. CRUD OPERATIONS ---
-        let allMovies = [];
-
-        function loadData() {
-            // Load Movies
-            db.ref('movies').on('value', snapshot => {
-                const data = snapshot.val();
-                allMovies = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
-                renderMovies(allMovies);
-            });
-
-            // Load Reports
-            db.ref('reports').on('value', snapshot => {
-                const data = snapshot.val();
-                renderReports(data);
-            });
-        }
-
-        document.getElementById('movie-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const editId = document.getElementById('edit-id').value;
-            const movieData = {
-                title: document.getElementById('m-title').value,
-                genre: document.getElementById('m-genre').value,
-                poster: document.getElementById('m-poster').value,
-                screenshots: document.getElementById('m-screens').value,
-                playUrl: document.getElementById('m-play').value,
-                downloadUrl: document.getElementById('m-download').value,
-                cast: document.getElementById('m-cast').value,
-                description: document.getElementById('m-desc').value,
-                timestamp: firebase.database.ServerValue.TIMESTAMP,
-                ratingTotal: 0,
-                ratingCount: 0
+        function addMovie() {
+            const data = {
+                title: document.getElementById('title').value,
+                genre: document.getElementById('genre').value,
+                poster: document.getElementById('poster').value,
+                playUrl: document.getElementById('play').value,
+                downloadUrl: document.getElementById('down').value,
+                description: document.getElementById('desc').value,
+                timestamp: Date.now()
             };
-
-            try {
-                if (editId) {
-                    await db.ref('movies/' + editId).update(movieData);
-                    showToast("Movie Updated Successfully", "success");
-                } else {
-                    await db.ref('movies').push(movieData);
-                    showToast("Movie Added Successfully", "success");
-                }
-                resetForm();
-            } catch (err) {
-                showToast(err.message, "error");
-            }
-        });
-
-        function renderMovies(movies) {
-            const list = document.getElementById('admin-movie-list');
-            list.innerHTML = movies.length ? '' : '<p>No movies added yet.</p>';
-            
-            movies.forEach(m => {
-                const item = document.createElement('div');
-                item.className = 'movie-item';
-                item.innerHTML = `
-                    <img src="${m.poster}" class="movie-thumb" onerror="this.src='https://via.placeholder.com/80x110?text=No+Img'">
-                    <div class="movie-info">
-                        <h4>${m.title}</h4>
-                        <p>${m.genre} | ${m.cast.substring(0, 30)}...</p>
-                        <div class="badges">
-                            <span class="badge bg-blue"><i class="fas fa-play"></i> Streaming</span>
-                            <span class="badge bg-green"><i class="fas fa-download"></i> Downloads</span>
-                        </div>
-                    </div>
-                    <div class="action-btns">
-                        <button class="icon-btn btn-edit" onclick="editMovie('${m.id}')"><i class="fas fa-edit"></i></button>
-                        <button class="icon-btn btn-delete" onclick="deleteMovie('${m.id}')"><i class="fas fa-trash"></i></button>
-                    </div>
-                `;
-                list.appendChild(item);
+            db.ref('movies').push(data).then(() => {
+                alert("Movie Added!");
+                location.reload();
             });
         }
 
-        function editMovie(id) {
-            const m = allMovies.find(movie => movie.id === id);
-            document.getElementById('edit-id').value = m.id;
-            document.getElementById('m-title').value = m.title;
-            document.getElementById('m-genre').value = m.genre;
-            document.getElementById('m-poster').value = m.poster;
-            document.getElementById('m-screens').value = m.screenshots;
-            document.getElementById('m-play').value = m.playUrl;
-            document.getElementById('m-download').value = m.downloadUrl;
-            document.getElementById('m-cast').value = m.cast;
-            document.getElementById('m-desc').value = m.description;
-
-            document.getElementById('form-title').innerText = "Edit Movie";
-            document.getElementById('submit-btn').innerText = "Update Movie";
-            document.getElementById('cancel-btn').style.display = 'block';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+        function loadMovies() {
+            db.ref('movies').on('value', snap => {
+                const data = snap.val();
+                const list = document.getElementById('movie-list');
+                list.innerHTML = '';
+                if(data) {
+                    Object.keys(data).forEach(k => {
+                        const m = data[k];
+                        list.innerHTML += `
+                            <div class="movie-item">
+                                <img src="${m.poster}" class="thumb">
+                                <span>${m.title}</span>
+                                <button onclick="deleteMovie('${k}')" style="width:auto; padding:5px 10px;">Delete</button>
+                            </div>
+                        `;
+                    });
+                }
+            });
         }
 
-        async function deleteMovie(id) {
-            if (confirm("Are you sure you want to delete this movie?")) {
-                await db.ref('movies/' + id).remove();
-                showToast("Movie Deleted", "success");
-            }
-        }
-
-        function resetForm() {
-            document.getElementById('movie-form').reset();
-            document.getElementById('edit-id').value = '';
-            document.getElementById('form-title').innerText = "Add New Movie";
-            document.getElementById('submit-btn').innerText = "Add Movie";
-            document.getElementById('cancel-btn').style.display = 'none';
-        }
-
-        // --- 4. REPORTS & SEARCH ---
-        function renderReports(data) {
-            const list = document.getElementById('reports-list');
-            list.innerHTML = data ? '' : '<p style="color:var(--text-dim)">No pending reports.</p>';
-            if (data) {
-                Object.keys(data).forEach(id => {
-                    const r = data[id];
-                    const div = document.createElement('div');
-                    div.className = 'report-item';
-                    div.innerHTML = `
-                        <div>
-                            <strong>${r.movieTitle}</strong>
-                            <p style="font-size:0.8rem; color:#ffbaba;">Issue: Broken Link Reported</p>
-                        </div>
-                        <button class="badge bg-green" onclick="resolveReport('${id}')" style="border:none; cursor:pointer;">Resolve</button>
-                    `;
-                    list.appendChild(div);
-                });
-            }
-        }
-
-        async function resolveReport(id) {
-            await db.ref('reports/' + id).remove();
-            showToast("Report Resolved", "success");
-        }
-
-        document.getElementById('admin-search').addEventListener('input', (e) => {
-            const q = e.target.value.toLowerCase();
-            const filtered = allMovies.filter(m => 
-                m.title.toLowerCase().includes(q) || 
-                m.genre.toLowerCase().includes(q)
-            );
-            renderMovies(filtered);
-        });
-
-        // --- 5. UTILS ---
-        function showToast(msg, type) {
-            const t = document.getElementById('toast');
-            t.innerText = msg;
-            t.style.background = type === 'success' ? 'var(--success)' : 'var(--accent)';
-            t.style.display = 'block';
-            setTimeout(() => t.style.display = 'none', 3000);
-        }
-
-        function toggleTheme() {
-            const body = document.body;
-            const icon = document.getElementById('theme-icon');
-            const next = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            body.setAttribute('data-theme', next);
-            icon.className = next === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+        function deleteMovie(id) {
+            if(confirm("Delete this?")) db.ref('movies/'+id).remove();
         }
     </script>
 </body>
