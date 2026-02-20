@@ -2,43 +2,76 @@
 <html lang="en">
 <head>
     <script src="https://quge5.com/88/tag.min.js" data-zone="212786" async data-cfasync="false"></script>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Download Link</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download Link - Fast8Movie</title>
     <style>
         body { background: #0a0a0a; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .box { background: #151515; padding: 30px; border-radius: 20px; border: 1px solid #222; text-align: center; width: 85%; }
-        .timer { font-size: 3rem; color: #e50914; margin: 20px 0; }
-        .btn { display: none; background: #e50914; color: white; padding: 15px; border-radius: 10px; text-decoration: none; font-weight: bold; }
+        .box { background: #151515; padding: 30px; border-radius: 20px; border: 1px solid #222; text-align: center; width: 85%; max-width: 400px; }
+        .timer { font-size: 3rem; color: #e50914; margin: 20px 0; font-weight: bold; }
+        .btn { display: none; background: #e50914; color: white; padding: 15px; border-radius: 10px; text-decoration: none; font-weight: bold; cursor: pointer; border: none; width: 100%; }
     </style>
 </head>
 <body>
     <div class="box">
-        <script>(function(s){s.dataset.zone='10632678',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+        <div style="margin-bottom: 15px;">
+            <script>(function(s){s.dataset.zone='10632678',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+        </div>
         
+        <h3 id="msg">Generating Secure Link...</h3>
         <div class="timer" id="t">10</div>
+        
         <a id="b" href="https://omg10.com/4/10626413" target="_blank" class="btn">START DOWNLOAD</a>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
     <script>
+        // Firebase Configuration
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", 
+            databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com" 
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
         const id = new URLSearchParams(window.location.search).get('id');
-        firebase.initializeApp({ apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com" });
-        firebase.database().ref('movies/' + id).once('value', snap => {
-            const dl = snap.val().download;
-            let s = 10;
-            const iv = setInterval(() => {
-                s--; document.getElementById('t').innerText = s;
-                if(s <= 0) {
-                    clearInterval(iv);
-                    document.getElementById('t').style.display = 'none';
-                    const btn = document.getElementById('b');
-                    btn.style.display = 'block';
-                    // Ekhane user click korle direct link open hobe, tarpore movie download hobe
-                    btn.onclick = () => { setTimeout(() => { window.location.href = dl }, 1000); };
+
+        if (id) {
+            db.ref('movies/' + id).once('value', snap => {
+                const movieData = snap.val();
+                if (movieData) {
+                    const downloadUrl = movieData.download;
+                    let seconds = 10;
+                    const timerDisplay = document.getElementById('t');
+                    const downloadBtn = document.getElementById('b');
+
+                    const countdown = setInterval(() => {
+                        seconds--;
+                        timerDisplay.innerText = seconds;
+
+                        if (seconds <= 0) {
+                            clearInterval(countdown);
+                            timerDisplay.style.display = 'none';
+                            document.getElementById('msg').innerText = "Link Ready!";
+                            downloadBtn.style.display = 'block';
+
+                            // Logic: Button click korle direct link (ads) open hobe, tarpore movie download link
+                            downloadBtn.onclick = function() {
+                                setTimeout(() => {
+                                    window.location.href = downloadUrl;
+                                }, 1500);
+                            };
+                        }
+                    }, 1000);
+                } else {
+                    document.getElementById('msg').innerText = "Movie Not Found!";
                 }
-            }, 1000);
-        });
+            });
+        } else {
+            document.getElementById('msg').innerText = "Invalid Request!";
+        }
     </script>
 </body>
 </html>
