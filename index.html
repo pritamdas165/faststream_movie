@@ -4,774 +4,153 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Fast8Movie - Stream & Download</title>
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <style>
+        /* CSS Settings */
         :root {
-            --primary-bg: #141414;
-            --secondary-bg: #1f1f1f;
-            --card-bg: #2a2a2a;
-            --accent: #e50914;
-            --text-main: #e5e5e5;
-            --text-dim: #999999;
-            --white: #ffffff;
-            --transition: all 0.3s ease;
+            --primary-bg: #141414; --secondary-bg: #1f1f1f; --card-bg: #2a2a2a;
+            --accent: #e50914; --text-main: #e5e5e5; --text-dim: #999999;
         }
-
-        [data-theme="light"] {
-            --primary-bg: #f5f5f5;
-            --secondary-bg: #ffffff;
-            --card-bg: #e0e0e0;
-            --text-main: #141414;
-            --text-dim: #666666;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            background-color: var(--primary-bg);
-            color: var(--text-main);
-            overflow-x: hidden;
-            transition: var(--transition);
-            padding-bottom: 70px; /* Space for bottom nav */
-        }
-
-        /* --- UI Components --- */
-
-        .loader {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--primary-bg);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 9999;
-        }
-
-        .spinner {
-            width: 50px; height: 50px;
-            border: 5px solid var(--secondary-bg);
-            border-top: 5px solid var(--accent);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* --- Header --- */
-        header {
-            position: sticky;
-            top: 0;
-            background: var(--primary-bg);
-            padding: 10px 15px;
-            z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .header-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            color: var(--accent);
-            font-size: 1.5rem;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-        }
-
-        .search-container {
-            position: relative;
-            width: 100%;
-        }
-
-        .search-container input {
-            width: 100%;
-            background: var(--secondary-bg);
-            border: 1px solid var(--card-bg);
-            padding: 12px 40px 12px 15px;
-            border-radius: 8px;
-            color: var(--text-main);
-            outline: none;
-        }
-
-        .search-container i {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-dim);
-        }
-
-        /* --- 3D Carousel --- */
-        .carousel-section {
-            height: 350px;
-            perspective: 1200px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            margin: 20px 0;
-        }
-
-        .carousel-container {
-            position: relative;
-            width: 200px;
-            height: 280px;
-            transform-style: preserve-3d;
-            transition: transform 0.7s ease;
-        }
-
-        .carousel-item {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            left: 0; top: 0;
-            border-radius: 10px;
-            overflow: hidden;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            backface-visibility: hidden;
-        }
-
-        .carousel-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .carousel-item .title-overlay {
-            position: absolute;
-            bottom: 0; width: 100%;
-            padding: 10px;
-            background: linear-gradient(transparent, rgba(0,0,0,0.9));
-            color: white;
-            font-size: 0.9rem;
-            text-align: center;
-        }
-
-        /* --- Genre Chips --- */
-        .genre-container {
-            display: flex;
-            overflow-x: auto;
-            padding: 10px 15px;
-            gap: 10px;
-            scrollbar-width: none;
-        }
-
-        .genre-container::-webkit-scrollbar { display: none; }
-
-        .genre-chip {
-            padding: 8px 18px;
-            background: var(--secondary-bg);
-            border-radius: 20px;
-            white-space: nowrap;
-            font-size: 0.9rem;
-            cursor: pointer;
-            border: 1px solid transparent;
-            transition: var(--transition);
-        }
-
-        .genre-chip.active {
-            background: var(--accent);
-            color: white;
-        }
-
-        /* --- Movie Grid --- */
-        .movie-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            padding: 15px;
-        }
-
-        .movie-card {
-            background: var(--card-bg);
-            border-radius: 8px;
-            overflow: hidden;
-            transition: transform 0.3s ease;
-            cursor: pointer;
-        }
-
-        .movie-card:active { transform: scale(0.95); }
-
-        .poster-wrapper {
-            position: relative;
-            aspect-ratio: 2/3;
-        }
-
-        .poster-wrapper img {
-            width: 100%; height: 100%;
-            object-fit: cover;
-        }
-
-        .card-info {
-            padding: 10px;
-        }
-
-        .card-title {
-            font-size: 0.9rem;
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-bottom: 5px;
-        }
-
-        .card-meta {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.75rem;
-            color: var(--text-dim);
-        }
-
-        .rating-star { color: #ffc107; margin-right: 3px; }
-
-        /* --- Modals --- */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95);
-            z-index: 2000;
-            display: none;
-            overflow-y: auto;
-            padding-bottom: 30px;
-        }
-
-        .modal-content {
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
-            position: relative;
-        }
-
-        .close-modal {
-            position: fixed;
-            top: 15px; right: 15px;
-            font-size: 1.5rem;
-            color: white;
-            z-index: 2100;
-            cursor: pointer;
-            background: rgba(0,0,0,0.5);
-            width: 40px; height: 40px;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-        }
-
-        .video-container {
-            width: 100%;
-            aspect-ratio: 16/9;
-            background: #000;
-            display: none;
-        }
-
-        .modal-poster {
-            width: 100%;
-            height: 400px;
-            object-fit: cover;
-        }
-
-        .modal-details {
-            padding: 20px;
-        }
-
-        .modal-title { font-size: 1.8rem; margin-bottom: 10px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: var(--primary-bg); color: var(--text-main); padding-bottom: 70px; }
+        header { position: sticky; top: 0; background: var(--primary-bg); padding: 15px; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .logo { color: var(--accent); font-size: 1.5rem; font-weight: bold; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+        .search-container { margin-top: 10px; position: relative; }
+        .search-container input { width: 100%; background: var(--secondary-bg); border: 1px solid #333; padding: 12px; border-radius: 8px; color: white; outline: none; }
         
-        .action-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin: 20px 0;
-        }
+        /* 3D Carousel */
+        .carousel-section { height: 350px; perspective: 1200px; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        .carousel-container { position: relative; width: 200px; height: 280px; transform-style: preserve-3d; transition: transform 0.7s ease; }
+        .carousel-item { position: absolute; width: 100%; height: 100%; border-radius: 10px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .carousel-item img { width: 100%; height: 100%; object-fit: cover; }
 
-        .btn {
-            flex: 1;
-            min-width: 140px;
-            padding: 12px;
-            border-radius: 6px;
-            border: none;
-            font-weight: bold;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
+        /* Grid */
+        .movie-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 15px; }
+        .movie-card { background: var(--card-bg); border-radius: 8px; overflow: hidden; }
+        .movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
+        .card-info { padding: 10px; }
 
-        .btn-play { background: #007bff; color: white; }
-        .btn-download { background: #28a745; color: white; }
-        .btn-fav { background: #444; color: white; }
-        .btn-report { background: #666; color: white; }
-        .btn-fav.active { color: var(--accent); }
-
-        .screenshot-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .screenshot-grid img {
-            width: 100%; border-radius: 5px;
-        }
-
-        /* --- Bottom Navigation --- */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0; left: 0; width: 100%;
-            height: 65px;
-            background: var(--secondary-bg);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            border-top: 1px solid var(--card-bg);
-            z-index: 1500;
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            color: var(--text-dim);
-            font-size: 0.7rem;
-            cursor: pointer;
-        }
-
+        /* Bottom Nav */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 60px; background: var(--secondary-bg); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #333; }
+        .nav-item { color: var(--text-dim); text-align: center; font-size: 0.8rem; cursor: pointer; }
         .nav-item.active { color: var(--accent); }
-        .nav-item i { font-size: 1.2rem; }
 
-        /* --- Settings Modal --- */
-        .settings-list {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
+        /* Modal */
+        .modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); display:none; z-index:2000; overflow-y:auto; }
+        .modal-content { max-width: 600px; margin: 20px auto; padding: 15px; }
+        .btn { padding: 12px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; display: block; width: 100%; margin: 10px 0; text-align: center; text-decoration: none; }
+        .btn-play { background: #007bff; color: white; }
+        .btn-down { background: #28a745; color: white; }
 
-        .setting-card {
-            background: var(--secondary-bg);
-            padding: 15px;
-            border-radius: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        /* Responsive Breakpoints */
-        @media (min-width: 768px) {
-            .movie-grid { grid-template-columns: repeat(4, 1fr); }
-            header { flex-direction: row; align-items: center; padding: 15px 50px; }
-            .search-container { width: 400px; }
-            .carousel-section { height: 450px; }
-            .carousel-container { width: 250px; height: 350px; }
-        }
-
-        @media (min-width: 1024px) {
-            .movie-grid { grid-template-columns: repeat(5, 1fr); }
-        }
+        @media (min-width: 768px) { .movie-grid { grid-template-columns: repeat(5, 1fr); } }
     </style>
 </head>
-<body data-theme="dark">
-
-    <div id="app-loader" class="loader">
-        <div class="spinner"></div>
-    </div>
+<body>
 
     <header>
-        <div class="header-top">
-            <a href="#" class="logo">
-                <i class="fas fa-film"></i> fast8movie
-            </a>
-        </div>
+        <a href="#" class="logo"><i class="fas fa-film"></i> Fast8Movie</a>
         <div class="search-container">
-            <input type="text" id="movie-search" placeholder="Search movies, genres...">
-            <i class="fas fa-search"></i>
+            <input type="text" id="search" placeholder="Search movies...">
         </div>
     </header>
 
     <div class="carousel-section">
-        <div class="carousel-container" id="featured-carousel">
-            </div>
+        <div class="carousel-container" id="carousel"></div>
     </div>
 
-    <div class="genre-container" id="genre-list">
-        <div class="genre-chip active" onclick="filterByGenre('All', this)">All</div>
-        </div>
+    <main class="movie-grid" id="movie-display"></main>
 
-    <main class="movie-grid" id="movie-display">
-        </main>
-
-    <div id="movie-modal" class="modal-overlay">
-        <div class="close-modal" onclick="closeModal()"><i class="fas fa-times"></i></div>
+    <div id="movie-modal" class="modal">
         <div class="modal-content">
-            <div id="video-player-box" class="video-container">
-                <iframe id="video-iframe" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>
-            </div>
-            <img src="" id="modal-poster" class="modal-poster" alt="Poster">
-            
-            <div class="modal-details">
-                <h1 id="modal-title" class="modal-title"></h1>
-                <div id="modal-genre" style="color: var(--accent); font-weight: bold; margin-bottom: 10px;"></div>
-                
-                <div class="action-buttons">
-                    <button id="btn-play" class="btn btn-play"><i class="fas fa-play"></i> Play Now</button>
-                    <button id="btn-download" class="btn btn-download"><i class="fas fa-download"></i> Download</button>
-                    <button id="btn-fav" class="btn btn-fav"><i class="fas fa-heart"></i> Favorite</button>
-                    <button id="btn-report" class="btn btn-report"><i class="fas fa-flag"></i> Report</button>
-                </div>
-
-                <p id="modal-desc" style="line-height: 1.6; color: var(--text-dim);"></p>
-
-                <h3 style="margin: 20px 0 10px 0;">Screenshots</h3>
-                <div id="screenshot-container" class="screenshot-grid"></div>
-
-                <h3 style="margin: 20px 0 10px 0;">Cast</h3>
-                <p id="modal-cast" style="color: var(--text-dim);"></p>
-            </div>
-        </div>
-    </div>
-
-    <div id="settings-modal" class="modal-overlay">
-        <div class="close-modal" onclick="closeSettings()"><i class="fas fa-times"></i></div>
-        <div class="modal-content" style="margin-top: 60px;">
-            <h2 style="text-align: center;">Settings</h2>
-            <div class="settings-list">
-                <div class="setting-card">
-                    <div>
-                        <strong>Dark Mode</strong>
-                        <p style="font-size: 0.8rem; color: var(--text-dim);">Toggle app appearance</p>
-                    </div>
-                    <button class="btn" onclick="toggleTheme()" style="width: auto; background: var(--accent);">Switch</button>
-                </div>
-                <div class="setting-card">
-                    <div>
-                        <strong>Account Status</strong>
-                        <p id="auth-status" style="font-size: 0.8rem; color: var(--text-dim);">Not Logged In</p>
-                    </div>
-                    <button id="auth-btn" class="btn" style="width: auto; background: #444;">Login</button>
-                </div>
-                <div class="setting-card">
-                    <div>
-                        <strong>App Version</strong>
-                        <p style="font-size: 0.8rem; color: var(--text-dim);">v1.0.4 - Stable</p>
-                    </div>
-                </div>
-            </div>
+            <button onclick="closeModal()" style="float:right; background:none; border:none; color:white; font-size:1.5rem;">&times;</button>
+            <img id="m-poster" style="width:100%; border-radius:10px;">
+            <h2 id="m-title" style="margin-top:15px;"></h2>
+            <p id="m-desc" style="color:var(--text-dim); margin:10px 0;"></p>
+            <a id="btn-play" class="btn btn-play"><i class="fas fa-play"></i> Watch Online</a>
+            <a id="btn-download" class="btn btn-down" target="_blank"><i class="fas fa-download"></i> Download Links</a>
         </div>
     </div>
 
     <nav class="bottom-nav">
-        <div class="nav-item active" onclick="navigate('home')">
-            <i class="fas fa-house"></i>
-            <span>Home</span>
-        </div>
-        <div class="nav-item" onclick="document.getElementById('movie-search').focus()">
-            <i class="fas fa-search"></i>
-            <span>Search</span>
-        </div>
-        <div class="nav-item" onclick="showFavorites()">
-            <i class="fas fa-heart"></i>
-            <span>Favorites</span>
-        </div>
-        <div class="nav-item" onclick="showSettings()">
-            <i class="fas fa-gear"></i>
-            <span>Settings</span>
-        </div>
+        <div class="nav-item active" onclick="location.reload()"><i class="fas fa-home"></i><br>Home</div>
+        <div class="nav-item" onclick="alert('Settings coming soon')"><i class="fas fa-cog"></i><br>Settings</div>
     </nav>
 
     <script>
-        // --- 1. CONFIGURATION ---
+        // আপনার দেওয়া কনফিগ এখানে অ্যাড করা হয়েছে
         const firebaseConfig = {
-            const firebaseConfig = {
-  apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4",
-  authDomain: "movie-project-b78b4.firebaseapp.com",
-  databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com",
-  projectId: "movie-project-b78b4",
-  storageBucket: "movie-project-b78b4.firebasestorage.app",
-  messagingSenderId: "819696212001",
-  appId: "1:819696212001:web:379b19305c6d604b2deb60"
-};
-        // Initialize Firebase
+            apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4",
+            authDomain: "movie-project-b78b4.firebaseapp.com",
+            databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com",
+            projectId: "movie-project-b78b4",
+            storageBucket: "movie-project-b78b4.firebasestorage.app",
+            messagingSenderId: "819696212001",
+            appId: "1:819696212001:web:379b19305c6d604b2deb60"
+        };
+
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        const auth = firebase.auth();
 
-        // --- 2. GLOBAL STATE ---
         let allMovies = [];
-        let filteredMovies = [];
-        let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-        let currentCarouselIndex = 0;
 
-        // --- 3. INITIALIZATION ---
-        window.addEventListener('DOMContentLoaded', () => {
-            fetchMovies();
-            initTheme();
-            startCarouselAutoRotate();
-            
-            // Search Event
-            document.getElementById('movie-search').addEventListener('input', (e) => {
-                handleSearch(e.target.value);
-            });
+        // ডেটা লোড করা
+        db.ref('movies').on('value', (snap) => {
+            const data = snap.val();
+            allMovies = data ? Object.keys(data).map(k => ({id:k, ...data[k]})) : [];
+            renderMovies(allMovies);
+            renderCarousel(allMovies.slice(0, 5));
         });
 
-        // --- 4. DATA FETCHING ---
-        function fetchMovies() {
-            db.ref('movies').on('value', (snapshot) => {
-                const data = snapshot.val();
-                allMovies = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
-                allMovies.sort((a, b) => b.timestamp - a.timestamp);
-                
-                displayMovies(allMovies);
-                renderCarousel(allMovies.slice(0, 5));
-                renderGenres();
-                document.getElementById('app-loader').style.display = 'none';
-            });
-        }
-
-        // --- 5. UI RENDERING ---
-        function displayMovies(movies) {
+        function renderMovies(movies) {
             const container = document.getElementById('movie-display');
-            container.innerHTML = movies.length ? '' : '<p style="grid-column: 1/-1; text-align: center;">No movies found.</p>';
-
-            movies.forEach(movie => {
-                const card = document.createElement('div');
-                card.className = 'movie-card';
-                card.onclick = () => openMovieDetail(movie);
-                card.innerHTML = `
-                    <div class="poster-wrapper">
-                        <img src="${movie.poster}" alt="${movie.title}" loading="lazy">
-                    </div>
+            container.innerHTML = movies.map(m => `
+                <div class="movie-card" onclick='openModal(${JSON.stringify(m)})'>
+                    <img src="${m.poster}">
                     <div class="card-info">
-                        <div class="card-title">${movie.title}</div>
-                        <div class="card-meta">
-                            <span>${movie.genre}</span>
-                            <span><i class="fas fa-star rating-star"></i>${movie.ratingCount > 0 ? (movie.ratingTotal / movie.ratingCount).toFixed(1) : 'N/A'}</span>
-                        </div>
+                        <div style="font-weight:bold; font-size:0.9rem;">${m.title}</div>
+                        <div style="font-size:0.7rem; color:var(--accent);">${m.genre}</div>
                     </div>
-                `;
-                container.appendChild(card);
-            });
+                </div>
+            `).join('');
         }
 
-        // 3D Carousel Logic
         function renderCarousel(movies) {
-            const carousel = document.getElementById('featured-carousel');
-            carousel.innerHTML = '';
-            
-            movies.forEach((movie, index) => {
-                const item = document.createElement('div');
-                item.className = 'carousel-item';
-                item.onclick = () => openMovieDetail(movie);
-                
-                // Position calculation for 3D
-                const angle = index * (360 / movies.length);
-                item.style.transform = `rotateY(${angle}deg) translateZ(250px)`;
-                
-                item.innerHTML = `
-                    <img src="${movie.poster}">
-                    <div class="title-overlay">${movie.title}</div>
-                `;
-                carousel.appendChild(item);
-            });
+            const car = document.getElementById('carousel');
+            car.innerHTML = movies.map((m, i) => `
+                <div class="carousel-item" style="transform: rotateY(${i * 72}deg) translateZ(250px);">
+                    <img src="${m.poster}">
+                </div>
+            `).join('');
         }
 
-        function rotateCarousel() {
-            const carousel = document.getElementById('featured-carousel');
-            currentCarouselIndex++;
-            const angle = currentCarouselIndex * -72; // 360/5 = 72
-            carousel.style.transform = `rotateY(${angle}deg)`;
+        function openModal(m) {
+            document.getElementById('m-title').innerText = m.title;
+            document.getElementById('m-desc').innerText = m.description;
+            document.getElementById('m-poster').src = m.poster;
+            document.getElementById('btn-download').href = m.downloadUrl;
+            document.getElementById('btn-play').onclick = () => window.open(m.playUrl, '_blank');
+            document.getElementById('movie-modal').style.display = 'block';
         }
 
-        function startCarouselAutoRotate() {
-            setInterval(rotateCarousel, 4000);
-        }
+        function closeModal() { document.getElementById('movie-modal').style.display = 'none'; }
 
-        // Genre Chips Rendering
-        function renderGenres() {
-            const genres = ['Action', 'Comedy', 'Drama', 'Horror', 'Sci-Fi', 'Animation', 'Adventure'];
-            const container = document.getElementById('genre-list');
-            // Keep "All" and add others
-            const existing = container.innerHTML;
-            container.innerHTML = `<div class="genre-chip active" onclick="filterByGenre('All', this)">All</div>`;
-            genres.forEach(g => {
-                container.innerHTML += `<div class="genre-chip" onclick="filterByGenre('${g}', this)">${g}</div>`;
-            });
-        }
+        // সার্চ লজিক
+        document.getElementById('search').addEventListener('input', (e) => {
+            const q = e.target.value.toLowerCase();
+            const filtered = allMovies.filter(m => m.title.toLowerCase().includes(q));
+            renderMovies(filtered);
+        });
 
-        // --- 6. MODAL LOGIC ---
-        function openMovieDetail(movie) {
-            const modal = document.getElementById('movie-modal');
-            const videoBox = document.getElementById('video-player-box');
-            const poster = document.getElementById('modal-poster');
-            
-            document.getElementById('modal-title').innerText = movie.title;
-            document.getElementById('modal-genre').innerText = movie.genre;
-            document.getElementById('modal-desc').innerText = movie.description;
-            document.getElementById('modal-cast').innerText = movie.cast || 'N/A';
-            poster.src = movie.poster;
-
-            // Screenshots
-            const screenContainer = document.getElementById('screenshot-container');
-            screenContainer.innerHTML = '';
-            if(movie.screenshots) {
-                movie.screenshots.split(',').forEach(url => {
-                    screenContainer.innerHTML += `<img src="${url.trim()}" onerror="this.style.display='none'">`;
-                });
-            }
-
-            // Buttons
-            document.getElementById('btn-play').onclick = () => playVideo(movie.playUrl);
-            document.getElementById('btn-download').onclick = () => window.open(movie.downloadUrl, '_blank');
-            
-            // Favorite Toggle
-            const favBtn = document.getElementById('btn-fav');
-            updateFavUI(movie.id);
-            favBtn.onclick = () => toggleFavorite(movie);
-
-            // Report
-            document.getElementById('btn-report').onclick = () => reportLink(movie);
-
-            modal.style.display = 'block';
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeModal() {
-            const modal = document.getElementById('movie-modal');
-            const iframe = document.getElementById('video-iframe');
-            iframe.src = ""; // Stop video
-            document.getElementById('video-player-box').style.display = 'none';
-            document.getElementById('modal-poster').style.display = 'block';
-            modal.style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
-
-        function playVideo(url) {
-            const videoBox = document.getElementById('video-player-box');
-            const poster = document.getElementById('modal-poster');
-            const iframe = document.getElementById('video-iframe');
-            
-            iframe.src = convertToEmbedUrl(url);
-            videoBox.style.display = 'block';
-            poster.style.display = 'none';
-        }
-
-        function convertToEmbedUrl(url) {
-            if (url.includes('youtube.com/watch?v=')) {
-                return url.replace('watch?v=', 'embed/') + '?autoplay=1';
-            }
-            if (url.includes('youtu.be/')) {
-                return url.replace('youtu.be/', 'youtube.com/embed/') + '?autoplay=1';
-            }
-            return url;
-        }
-
-        // --- 7. UTILITIES ---
-        function handleSearch(query) {
-            const q = query.toLowerCase();
-            const filtered = allMovies.filter(m => 
-                m.title.toLowerCase().includes(q) || 
-                m.genre.toLowerCase().includes(q)
-            );
-            displayMovies(filtered);
-        }
-
-        function filterByGenre(genre, element) {
-            document.querySelectorAll('.genre-chip').forEach(c => c.classList.remove('active'));
-            element.classList.add('active');
-            
-            if(genre === 'All') {
-                displayMovies(allMovies);
-            } else {
-                const filtered = allMovies.filter(m => m.genre === genre);
-                displayMovies(filtered);
-            }
-        }
-
-        function toggleFavorite(movie) {
-            const index = favorites.findIndex(f => f.id === movie.id);
-            if(index === -1) {
-                favorites.push(movie);
-                alert("Added to favorites!");
-            } else {
-                favorites.splice(index, 1);
-                alert("Removed from favorites.");
-            }
-            localStorage.setItem('favorites', JSON.stringify(favorites));
-            updateFavUI(movie.id);
-        }
-
-        function updateFavUI(movieId) {
-            const btn = document.getElementById('btn-fav');
-            const isFav = favorites.some(f => f.id === movieId);
-            if(isFav) {
-                btn.classList.add('active');
-                btn.innerHTML = `<i class="fas fa-heart"></i> Favorited`;
-            } else {
-                btn.classList.remove('active');
-                btn.innerHTML = `<i class="far fa-heart"></i> Favorite`;
-            }
-        }
-
-        function showFavorites() {
-            displayMovies(favorites);
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.querySelector('.nav-item:nth-child(3)').classList.add('active');
-        }
-
-        function reportLink(movie) {
-            const reportId = Date.now();
-            db.ref('reports/' + reportId).set({
-                movieId: movie.id,
-                movieTitle: movie.title,
-                timestamp: firebase.database.ServerValue.TIMESTAMP,
-                userId: auth.currentUser ? auth.currentUser.uid : 'Anonymous'
-            }).then(() => alert("Broken link reported. Admin will check."));
-        }
-
-        // Theme Toggle
-        function toggleTheme() {
-            const body = document.body;
-            const current = body.getAttribute('data-theme');
-            const next = current === 'dark' ? 'light' : 'dark';
-            body.setAttribute('data-theme', next);
-            localStorage.setItem('theme', next);
-        }
-
-        function initTheme() {
-            const saved = localStorage.getItem('theme') || 'dark';
-            document.body.setAttribute('data-theme', saved);
-        }
-
-        // Settings
-        function showSettings() {
-            document.getElementById('settings-modal').style.display = 'block';
-        }
-        function closeSettings() {
-            document.getElementById('settings-modal').style.display = 'none';
-        }
-
-        function navigate(page) {
-            if(page === 'home') {
-                displayMovies(allMovies);
-                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-                document.querySelector('.nav-item:first-child').classList.add('active');
-            }
-        }
+        // Carousel অটো রোটেশন
+        let angle = 0;
+        setInterval(() => {
+            angle -= 72;
+            document.getElementById('carousel').style.transform = `rotateY(${angle}deg)`;
+        }, 4000);
     </script>
 </body>
 </html>
