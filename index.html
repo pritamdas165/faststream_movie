@@ -2,37 +2,48 @@
 <html lang="en">
 <head>
     <script src="https://quge5.com/88/tag.min.js" data-zone="212786" async data-cfasync="false"></script>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fast8Movie - Home</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
     <style>
         :root { --bg: #0a0a0a; --card: #151515; --accent: #e50914; --text: #fff; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 70px; }
-        header { padding: 15px; background: #111; border-bottom: 1px solid #222; text-align: center; position: sticky; top: 0; z-index: 100; }
+        * { box-sizing: border-box; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 70px; overflow-x: hidden; }
+        
+        header { padding: 15px; background: #111; border-bottom: 1px solid #222; text-align: center; position: sticky; top: 0; z-index: 1000; }
         .logo { color: var(--accent); font-size: 1.5rem; font-weight: 900; text-decoration: none; letter-spacing: 1px; }
-        .carousel-section { height: 320px; perspective: 1500px; display: flex; justify-content: center; align-items: center; overflow: hidden; background: radial-gradient(circle, #222 0%, #0a0a0a 100%); }
-        .carousel-container { position: relative; width: 160px; height: 230px; transform-style: preserve-3d; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
-        .carousel-item { position: absolute; width: 100%; height: 100%; border-radius: 12px; overflow: hidden; border: 1px solid #333; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+
+        /* 3D CAROUSEL OPTIMIZATION */
+        .carousel-section { height: 350px; perspective: 1200px; display: flex; justify-content: center; align-items: center; overflow: hidden; background: radial-gradient(circle, #252525 0%, #0a0a0a 100%); }
+        .carousel-container { position: relative; width: 150px; height: 210px; transform-style: preserve-3d; transition: transform 1s cubic-bezier(0.23, 1, 0.32, 1); }
+        .carousel-item { position: absolute; width: 100%; height: 100%; border-radius: 12px; overflow: hidden; border: 1px solid #333; cursor: pointer; backface-visibility: hidden; }
         .carousel-item img { width: 100%; height: 100%; object-fit: cover; }
-        .movie-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 15px; }
-        .movie-card { background: var(--card); border-radius: 10px; overflow: hidden; border: 1px solid #222; cursor: pointer; transition: 0.3s; }
-        .movie-card:hover { transform: scale(1.03); border-color: var(--accent); }
-        .movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
-        .movie-title { padding: 8px; font-size: 11px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 60px; background: #111; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #222; }
-        .nav-link { color: #888; text-decoration: none; text-align: center; font-size: 10px; }
+
+        /* GRID UI */
+        .movie-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px; }
+        .movie-card { background: var(--card); border-radius: 8px; overflow: hidden; border: 1px solid #222; cursor: pointer; }
+        .movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; }
+        .movie-title { padding: 8px; font-size: 10px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* BOTTOM NAV */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 60px; background: #111; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #222; z-index: 1000; }
+        .nav-link { color: #888; text-decoration: none; text-align: center; font-size: 11px; flex: 1; }
+        .nav-link i { font-size: 18px; margin-bottom: 3px; }
         .nav-link.active { color: var(--accent); }
     </style>
 </head>
 <body>
+
     <header><a href="index.html" class="logo">FAST8MOVIE</a></header>
     
     <div class="carousel-section">
         <div class="carousel-container" id="carousel"></div>
     </div>
 
-    <div style="text-align:center; margin:15px 0;">
+    <div id="banner-ad" style="text-align:center; margin:15px 0; min-height: 50px;">
         <script>(function(s){s.dataset.zone='10632678',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
     </div>
 
@@ -45,33 +56,53 @@
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
     <script>
-        const firebaseConfig = { apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com" };
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", 
+            databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com" 
+        };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        let rotationAngle = 0;
+        let rotationInterval;
+
+        // Fetch Data from Firebase
         db.ref('movies').on('value', snap => {
             const data = snap.val();
             const movies = data ? Object.keys(data).map(k => ({id:k, ...data[k]})) : [];
-            const display = document.getElementById('movie-display');
-            const carousel = document.getElementById('carousel');
+            
+            const displayEl = document.getElementById('movie-display');
+            const carouselEl = document.getElementById('carousel');
 
-            display.innerHTML = movies.reverse().map(m => `
+            // 1. Grid Display (Latest First)
+            displayEl.innerHTML = movies.slice().reverse().map(m => `
                 <div class="movie-card" onclick="location.href='go.html?id=${m.id}'">
-                    <img src="${m.poster}">
+                    <img src="${m.poster}" alt="${m.title}">
                     <div class="movie-title">${m.title}</div>
                 </div>
             `).join('');
 
-            carousel.innerHTML = movies.slice(0, 5).map((m, idx) => `
-                <div class="carousel-item" style="transform: rotateY(${idx * 72}deg) translateZ(250px);" onclick="location.href='go.html?id=${m.id}'">
-                    <img src="${m.poster}">
-                </div>
-            `).join('');
+            // 2. Carousel Display (Top 5)
+            if (movies.length > 0) {
+                carouselEl.innerHTML = movies.slice(-5).map((m, idx) => `
+                    <div class="carousel-item" style="transform: rotateY(${idx * 72}deg) translateZ(250px);" onclick="location.href='go.html?id=${m.id}'">
+                        <img src="${m.poster}">
+                    </div>
+                `).join('');
+                
+                // Start/Restart Auto Rotation only if not already running
+                if(!rotationInterval) {
+                    rotationInterval = setInterval(() => {
+                        rotationAngle -= 72;
+                        carouselEl.style.transform = `rotateY(${rotationAngle}deg)`;
+                    }, 4000);
+                }
+            } else {
+                displayEl.innerHTML = "<p style='grid-column: 1/4; text-align:center;'>No movies found.</p>";
+            }
         });
-
-        let angle = 0;
-        setInterval(() => { angle -= 72; document.getElementById('carousel').style.transform = `rotateY(${angle}deg)`; }, 4000);
     </script>
 </body>
 </html>
