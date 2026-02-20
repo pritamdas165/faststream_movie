@@ -6,55 +6,62 @@
     <title>Fast8Movie - Stream & Download</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <style>
-        /* CSS Settings */
         :root {
-            --primary-bg: #141414; --secondary-bg: #1f1f1f; --card-bg: #2a2a2a;
-            --accent: #e50914; --text-main: #e5e5e5; --text-dim: #999999;
+            --primary-bg: #0a0a0a; --secondary-bg: #151515; --card-bg: #1f1f1f;
+            --accent: #e50914; --text-main: #ffffff; --text-dim: #b3b3b3;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background-color: var(--primary-bg); color: var(--text-main); padding-bottom: 70px; }
-        header { position: sticky; top: 0; background: var(--primary-bg); padding: 15px; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-        .logo { color: var(--accent); font-size: 1.5rem; font-weight: bold; text-decoration: none; display: flex; align-items: center; gap: 8px; }
-        .search-container { margin-top: 10px; position: relative; }
-        .search-container input { width: 100%; background: var(--secondary-bg); border: 1px solid #333; padding: 12px; border-radius: 8px; color: white; outline: none; }
         
-        /* 3D Carousel */
-        .carousel-section { height: 350px; perspective: 1200px; display: flex; justify-content: center; align-items: center; overflow: hidden; }
-        .carousel-container { position: relative; width: 200px; height: 280px; transform-style: preserve-3d; transition: transform 0.7s ease; }
-        .carousel-item { position: absolute; width: 100%; height: 100%; border-radius: 10px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        header { position: sticky; top: 0; background: rgba(10,10,10,0.9); padding: 15px; z-index: 1000; backdrop-filter: blur(10px); }
+        .logo { color: var(--accent); font-size: 1.4rem; font-weight: 900; text-decoration: none; display: flex; align-items: center; gap: 8px; letter-spacing: 1px; }
+        
+        .search-container { margin-top: 12px; }
+        .search-container input { width: 100%; background: var(--secondary-bg); border: 1px solid #333; padding: 12px; border-radius: 10px; color: white; outline: none; transition: 0.3s; }
+        .search-container input:focus { border-color: var(--accent); }
+
+        /* Carousel Section */
+        .carousel-section { height: 320px; perspective: 1500px; display: flex; justify-content: center; align-items: center; overflow: hidden; background: radial-gradient(circle, #222 0%, #0a0a0a 100%); }
+        .carousel-container { position: relative; width: 160px; height: 230px; transform-style: preserve-3d; transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .carousel-item { position: absolute; width: 100%; height: 100%; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.8); border: 1px solid #333; }
         .carousel-item img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Grid */
-        .movie-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 15px; }
-        .movie-card { background: var(--card-bg); border-radius: 8px; overflow: hidden; }
+        /* Movie Grid */
+        .movie-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px; }
+        .movie-card { background: var(--card-bg); border-radius: 10px; overflow: hidden; transition: 0.3s; border: 1px solid #222; }
+        .movie-card:active { transform: scale(0.95); }
         .movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
-        .card-info { padding: 10px; }
+        .card-info { padding: 8px; }
+        .card-info .title { font-weight: bold; font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-info .genre { font-size: 0.65rem; color: var(--accent); margin-top: 3px; }
 
-        /* Bottom Nav */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 60px; background: var(--secondary-bg); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #333; }
-        .nav-item { color: var(--text-dim); text-align: center; font-size: 0.8rem; cursor: pointer; }
+        /* Modal Settings */
+        .modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.98); display:none; z-index:2000; overflow-y:auto; }
+        .modal-content { max-width: 500px; margin: 0 auto; padding: 20px; }
+        .m-ss-container { margin: 15px 0; border-radius: 10px; overflow: hidden; border: 1px solid #333; }
+        .m-ss-container img { width: 100%; display: block; }
+        
+        .btn { padding: 15px; border-radius: 12px; border: none; font-weight: 900; cursor: pointer; display: block; width: 100%; margin: 10px 0; text-align: center; text-decoration: none; font-size: 1rem; }
+        .btn-play { background: white; color: black; }
+        .btn-down { background: var(--accent); color: white; }
+
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 65px; background: rgba(20,20,20,0.95); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #222; backdrop-filter: blur(10px); }
+        .nav-item { color: var(--text-dim); text-align: center; font-size: 0.75rem; cursor: pointer; transition: 0.3s; }
+        .nav-item i { font-size: 1.2rem; margin-bottom: 4px; }
         .nav-item.active { color: var(--accent); }
 
-        /* Modal */
-        .modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); display:none; z-index:2000; overflow-y:auto; }
-        .modal-content { max-width: 600px; margin: 20px auto; padding: 15px; }
-        .btn { padding: 12px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; display: block; width: 100%; margin: 10px 0; text-align: center; text-decoration: none; }
-        .btn-play { background: #007bff; color: white; }
-        .btn-down { background: #28a745; color: white; }
-
-        @media (min-width: 768px) { .movie-grid { grid-template-columns: repeat(5, 1fr); } }
+        @media (min-width: 768px) { .movie-grid { grid-template-columns: repeat(6, 1fr); } .carousel-container { width: 220px; height: 320px; } }
     </style>
 </head>
 <body>
 
     <header>
-        <a href="#" class="logo"><i class="fas fa-film"></i> Fast8Movie</a>
+        <a href="index.html" class="logo"><i class="fas fa-play-circle"></i> FAST8MOVIE</a>
         <div class="search-container">
-            <input type="text" id="search" placeholder="Search movies...">
+            <input type="text" id="search" placeholder="Search movies, series...">
         </div>
     </header>
 
@@ -62,26 +69,31 @@
         <div class="carousel-container" id="carousel"></div>
     </div>
 
+    <h3 style="padding: 15px 15px 0; font-size: 1.1rem;">Latest Uploads</h3>
     <main class="movie-grid" id="movie-display"></main>
 
     <div id="movie-modal" class="modal">
         <div class="modal-content">
-            <button onclick="closeModal()" style="float:right; background:none; border:none; color:white; font-size:1.5rem;">&times;</button>
-            <img id="m-poster" style="width:100%; border-radius:10px;">
-            <h2 id="m-title" style="margin-top:15px;"></h2>
-            <p id="m-desc" style="color:var(--text-dim); margin:10px 0;"></p>
-            <a id="btn-play" class="btn btn-play"><i class="fas fa-play"></i> Watch Online</a>
-            <a id="btn-download" class="btn btn-down" target="_blank"><i class="fas fa-download"></i> Download Links</a>
+            <div onclick="closeModal()" style="text-align:right; font-size: 2rem; cursor:pointer; color: #666;">&times;</div>
+            <img id="m-poster" style="width:100%; border-radius:15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <h2 id="m-title" style="margin-top:20px; font-size: 1.5rem;"></h2>
+            <p id="m-meta" style="color:var(--accent); font-weight:bold; margin-top:5px;"></p>
+            
+            <div class="section-label" style="margin-top:20px; color:var(--text-dim); font-size: 0.8rem;">SCREENSHOT</div>
+            <div class="m-ss-container" id="m-ss"></div>
+
+            <a id="btn-play" class="btn btn-play"><i class="fas fa-play"></i> Watch Now</a>
+            <a id="btn-download" class="btn btn-down" target="_blank"><i class="fas fa-download"></i> Download HD</a>
         </div>
     </div>
 
     <nav class="bottom-nav">
         <div class="nav-item active" onclick="location.reload()"><i class="fas fa-home"></i><br>Home</div>
-        <div class="nav-item" onclick="alert('Settings coming soon')"><i class="fas fa-cog"></i><br>Settings</div>
+        <div class="nav-item" onclick="window.location.href='admin.html'"><i class="fas fa-user-shield"></i><br>Admin</div>
+        <div class="nav-item" onclick="alert('Join our Telegram for updates!')"><i class="fab fa-telegram"></i><br>Telegram</div>
     </nav>
 
     <script>
-        // আপনার দেওয়া কনফিগ এখানে অ্যাড করা হয়েছে
         const firebaseConfig = {
             apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4",
             authDomain: "movie-project-b78b4.firebaseapp.com",
@@ -94,25 +106,24 @@
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-
         let allMovies = [];
 
-        // ডেটা লোড করা
+        // Load Data
         db.ref('movies').on('value', (snap) => {
             const data = snap.val();
             allMovies = data ? Object.keys(data).map(k => ({id:k, ...data[k]})) : [];
             renderMovies(allMovies);
-            renderCarousel(allMovies.slice(0, 5));
+            renderCarousel(allMovies.slice(-5)); // Show last 5 in carousel
         });
 
         function renderMovies(movies) {
             const container = document.getElementById('movie-display');
-            container.innerHTML = movies.map(m => `
-                <div class="movie-card" onclick='openModal(${JSON.stringify(m)})'>
+            container.innerHTML = movies.reverse().map(m => `
+                <div class="movie-card" onclick='prepareModal("${m.id}")'>
                     <img src="${m.poster}">
                     <div class="card-info">
-                        <div style="font-weight:bold; font-size:0.9rem;">${m.title}</div>
-                        <div style="font-size:0.7rem; color:var(--accent);">${m.genre}</div>
+                        <div class="title">${m.title}</div>
+                        <div class="genre">${m.genre} | ${m.quality || 'HD'}</div>
                     </div>
                 </div>
             `).join('');
@@ -121,31 +132,43 @@
         function renderCarousel(movies) {
             const car = document.getElementById('carousel');
             car.innerHTML = movies.map((m, i) => `
-                <div class="carousel-item" style="transform: rotateY(${i * 72}deg) translateZ(250px);">
+                <div class="carousel-item" style="transform: rotateY(${i * 72}deg) translateZ(280px);" onclick='prepareModal("${m.id}")'>
                     <img src="${m.poster}">
                 </div>
             `).join('');
         }
 
-        function openModal(m) {
+        function prepareModal(id) {
+            const m = allMovies.find(item => item.id === id);
             document.getElementById('m-title').innerText = m.title;
-            document.getElementById('m-desc').innerText = m.description;
+            document.getElementById('m-meta').innerText = `${m.genre} • ${m.quality || 'BluRay'}`;
             document.getElementById('m-poster').src = m.poster;
-            document.getElementById('btn-download').href = m.downloadUrl;
-            document.getElementById('btn-play').onclick = () => window.open(m.playUrl, '_blank');
+            
+            // Fix: Screenshots display
+            const ssBox = document.getElementById('m-ss');
+            ssBox.innerHTML = m.screenshots ? `<img src="${m.screenshots[0]}">` : `<p>No Preview</p>`;
+            
+            // Fix: Buttons mapping to Admin Panel fields
+            document.getElementById('btn-download').href = m.download || "#";
+            document.getElementById('btn-play').onclick = () => window.open(m.download, '_blank');
+            
             document.getElementById('movie-modal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
         }
 
-        function closeModal() { document.getElementById('movie-modal').style.display = 'none'; }
+        function closeModal() { 
+            document.getElementById('movie-modal').style.display = 'none'; 
+            document.body.style.overflow = 'auto';
+        }
 
-        // সার্চ লজিক
+        // Search Logic
         document.getElementById('search').addEventListener('input', (e) => {
             const q = e.target.value.toLowerCase();
             const filtered = allMovies.filter(m => m.title.toLowerCase().includes(q));
             renderMovies(filtered);
         });
 
-        // Carousel অটো রোটেশন
+        // 3D Carousel Rotation
         let angle = 0;
         setInterval(() => {
             angle -= 72;
