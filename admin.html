@@ -3,103 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel | Manual Upload</title>
+    <title>FastStream | Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        :root { --primary: #e50914; --bg: #0f1014; --box: #1c1d24; }
-        body { font-family: sans-serif; background: var(--bg); color: white; padding: 20px; }
-        .box { background: var(--box); padding: 25px; border-radius: 12px; max-width: 480px; margin: auto; border: 1px solid #333; }
-        h2 { text-align: center; color: var(--primary); }
-        label { font-size: 14px; color: #aaa; margin-top: 10px; display: block; }
-        input, textarea { width: 100%; padding: 12px; margin: 8px 0; background: #2a2b33; border: 1px solid #444; border-radius: 8px; color: white; box-sizing: border-box; }
-        .btn { background: var(--primary); color: white; width: 100%; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 15px; }
-        .btn:hover { background: #b20710; }
+        :root { --primary: #e50914; --bg: #121212; --card-bg: #1e1e1e; --border: #333; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; padding: 20px; }
+        
+        .container { max-width: 800px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .header h1 { color: var(--primary); font-size: 24px; margin: 0; }
+
+        /* Form Styling */
+        .form-card { background: var(--card-bg); padding: 25px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        input, select, textarea { 
+            width: 100%; padding: 12px; margin-top: 8px; margin-bottom: 15px; 
+            background: #252525; border: 1px solid var(--border); color: white; 
+            border-radius: 6px; outline: none; box-sizing: border-box;
+        }
+        input:focus { border-color: var(--primary); }
+        label { font-size: 14px; color: #aaa; }
+
+        button { 
+            width: 100%; padding: 15px; background: var(--primary); color: white; 
+            border: none; border-radius: 6px; font-weight: bold; cursor: pointer; 
+            font-size: 16px; transition: 0.3s; margin-top: 10px;
+        }
+        button:hover { background: #b20710; transform: translateY(-2px); }
+
+        /* Movie List Section */
+        .movie-list { margin-top: 40px; }
+        .movie-item { 
+            background: #1a1a1a; padding: 15px; border-radius: 8px; 
+            display: flex; align-items: center; gap: 15px; margin-bottom: 10px; border: 1px solid var(--border);
+        }
+        .movie-item img { width: 50px; height: 70px; object-fit: cover; border-radius: 4px; }
+        .movie-info { flex-grow: 1; }
+        .movie-info h4 { margin: 0; font-size: 15px; }
+        .movie-info p { margin: 5px 0 0; font-size: 12px; color: #777; }
+        .del-btn { background: #333; color: #ff4444; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; }
+        .del-btn:hover { background: #ff4444; color: white; }
+
+        @media (max-width: 600px) { .grid-inputs { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-    <div class="box">
-        <h2>Add New Movie</h2>
-        
-        <label>Movie Title</label>
-        <input type="text" id="title" placeholder="e.g. Kick (2014)">
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-user-shield"></i> Admin Panel</h1>
+            <a href="index.html" style="color:#aaa; text-decoration:none; font-size:14px;">View Site</a>
+        </div>
 
-        <label>Genre (Matches User Panel Buttons)</label>
-        <input type="text" id="genre" placeholder="e.g. Action, South, Hindi">
-        
-        <label>Poster Image URL</label>
-        <input type="text" id="poster" placeholder="Paste Image Link">
-        
-        <label>Download Link</label>
-        <input type="text" id="link" placeholder="Paste Download Link">
+        <div class="form-card">
+            <label>Movie Title</label>
+            <input type="text" id="title" placeholder="e.g. Animal (2023)">
 
-        <label>Quality (Badge)</label>
-        <input type="text" id="quality" placeholder="e.g. HD, 4K, Dual Audio">
-        
-        <label>Storyline / Description</label>
-        <textarea id="story" rows="4" placeholder="Brief story..."></textarea>
-        
-        <label>YouTube Trailer ID (Optional)</label>
-        <input type="text" id="yt" placeholder="e.g. d83l0s_f4">
+            <div class="grid-inputs">
+                <div>
+                    <label>Genre</label>
+                    <select id="genre">
+                        <option value="Action">Action</option>
+                        <option value="Bollywood">Bollywood</option>
+                        <option value="Hollywood">Hollywood</option>
+                        <option value="South Indian">South Indian</option>
+                        <option value="Hindi Dubbed">Hindi Dubbed</option>
+                        <option value="Horror">Horror</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Quality</label>
+                    <input type="text" id="quality" placeholder="e.g. 1080p | 4K">
+                </div>
+            </div>
 
-        <button class="btn" onclick="saveToFirebase()">PUBLISH MOVIE</button>
+            <label>Poster Image URL</label>
+            <input type="text" id="poster" placeholder="https://image-link.com/poster.jpg">
+
+            <label>Download Link (Drive/Direct)</label>
+            <input type="text" id="download" placeholder="https://download-link.com">
+
+            <button onclick="addMovie()"><i class="fas fa-plus"></i> PUBLISH MOVIE</button>
+        </div>
+
+        <div class="movie-list">
+            <h3>Manage Movies</h3>
+            <div id="movieContainer"></div>
+        </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    
+
     <script>
+        // ✅ Apnar Firebase Config
         const firebaseConfig = {
-            apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4",
-            authDomain: "movie-project-b78b4.firebaseapp.com",
-            databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com",
-            projectId: "movie-project-b78b4",
-            storageBucket: "movie-project-b78b4.firebasestorage.app",
-            messagingSenderId: "819696212001",
-            appId: "1:819696212001:web:379b19305c6d604b2deb60"
+          apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4",
+          authDomain: "movie-project-b78b4.firebaseapp.com",
+          databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com",
+          projectId: "movie-project-b78b4",
+          storageBucket: "movie-project-b78b4.firebasestorage.app",
+          messagingSenderId: "819696212001",
+          appId: "1:819696212001:web:379b19305c6d604b2deb60"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        function saveToFirebase() {
+        // Add Movie Function
+        function addMovie() {
             const title = document.getElementById('title').value;
             const genre = document.getElementById('genre').value;
-            const poster = document.getElementById('poster').value;
-            const link = document.getElementById('link').value;
             const quality = document.getElementById('quality').value;
-            const story = document.getElementById('story').value;
-            const trailer = document.getElementById('yt').value;
+            const poster = document.getElementById('poster').value;
+            const download = document.getElementById('download').value;
 
-            if(!title || !poster || !link) {
-                alert("Please fill Title, Poster, and Download Link!");
-                return;
-            }
+            if(!title || !poster) return alert("Title and Poster are required!");
 
-            const movieData = {
-                title: title,
-                genre: genre, // Added genre for filtering
-                poster: poster,
-                link: link,
-                quality: quality || 'HD', // Matches user panel badge
-                story: story,
-                trailer: trailer,
-                date: new Date().toLocaleDateString()
-            };
-
-            db.ref('movies').push(movieData)
-            .then(() => {
-                alert("✅ Movie Published Successfully!");
-                // Clear fields
-                document.getElementById('title').value = "";
-                document.getElementById('genre').value = "";
-                document.getElementById('poster').value = "";
-                document.getElementById('link').value = "";
-                document.getElementById('quality').value = "";
-                document.getElementById('story').value = "";
-                document.getElementById('yt').value = "";
-            })
-            .catch((error) => {
-                alert("❌ Error: " + error.message);
+            db.ref('movies').push({
+                title, genre, quality, poster, download,
+                timestamp: Date.now()
+            }).then(() => {
+                alert("Movie Added Successfully!");
+                location.reload();
             });
+        }
+
+        // Load & Delete Movie
+        db.ref('movies').on('value', (snap) => {
+            const container = document.getElementById('movieContainer');
+            container.innerHTML = '';
+            snap.forEach((child) => {
+                const m = child.val();
+                container.innerHTML += `
+                    <div class="movie-item">
+                        <img src="${m.poster}">
+                        <div class="movie-info">
+                            <h4>${m.title}</h4>
+                            <p>${m.genre} | ${m.quality}</p>
+                        </div>
+                        <button class="del-btn" onclick="deleteMovie('${child.key}')"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+            });
+        });
+
+        function deleteMovie(id) {
+            if(confirm("Are you sure you want to delete this movie?")) {
+                db.ref('movies/' + id).remove();
+            }
         }
     </script>
 </body>
