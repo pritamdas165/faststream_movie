@@ -4,47 +4,74 @@
     <script src="https://quge5.com/88/tag.min.js" data-zone="212786" async data-cfasync="false"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fast8Movie | Home</title>
+    <title>Fast8Movie - Home</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
-        :root { --primary-bg: #0a0a0a; --accent: #e50914; }
-        body { background: var(--primary-bg); color: white; margin: 0; padding-bottom: 70px; font-family: sans-serif; }
-        header { padding: 15px; background: #111; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
-        .logo { color: var(--accent); font-size: 1.4rem; font-weight: 900; text-decoration: none; }
-        .carousel-section { height: 300px; perspective: 1500px; display: flex; justify-content: center; align-items: center; overflow: hidden; background: radial-gradient(circle, #222 0%, #0a0a0a 100%); }
-        .carousel-container { position: relative; width: 150px; height: 210px; transform-style: preserve-3d; transition: transform 0.8s; }
-        .carousel-item { position: absolute; width: 100%; height: 100%; border-radius: 10px; overflow: hidden; border: 1px solid #333; }
-        .movie-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px; }
-        .movie-card { background: #1a1a1a; border-radius: 8px; overflow: hidden; border: 1px solid #222; cursor: pointer; }
+        :root { --bg: #0a0a0a; --card: #151515; --accent: #e50914; --text: #fff; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 70px; }
+        header { padding: 15px; background: #111; border-bottom: 1px solid #222; text-align: center; position: sticky; top: 0; z-index: 100; }
+        .logo { color: var(--accent); font-size: 1.5rem; font-weight: 900; text-decoration: none; letter-spacing: 1px; }
+        .carousel-section { height: 320px; perspective: 1500px; display: flex; justify-content: center; align-items: center; overflow: hidden; background: radial-gradient(circle, #222 0%, #0a0a0a 100%); }
+        .carousel-container { position: relative; width: 160px; height: 230px; transform-style: preserve-3d; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+        .carousel-item { position: absolute; width: 100%; height: 100%; border-radius: 12px; overflow: hidden; border: 1px solid #333; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .carousel-item img { width: 100%; height: 100%; object-fit: cover; }
+        .movie-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 15px; }
+        .movie-card { background: var(--card); border-radius: 10px; overflow: hidden; border: 1px solid #222; cursor: pointer; transition: 0.3s; }
+        .movie-card:hover { transform: scale(1.03); border-color: var(--accent); }
         .movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
+        .movie-title { padding: 8px; font-size: 11px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 60px; background: #111; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #222; }
+        .nav-link { color: #888; text-decoration: none; text-align: center; font-size: 10px; }
+        .nav-link.active { color: var(--accent); }
     </style>
 </head>
 <body>
-    <header><a href="index.html" class="logo">FAST8MOVIE</a><i class="fas fa-search"></i></header>
-    <div class="carousel-section"><div class="carousel-container" id="carousel"></div></div>
+    <header><a href="index.html" class="logo">FAST8MOVIE</a></header>
+    
+    <div class="carousel-section">
+        <div class="carousel-container" id="carousel"></div>
+    </div>
 
-    <div style="text-align:center; margin:10px 0;">
+    <div style="text-align:center; margin:15px 0;">
         <script>(function(s){s.dataset.zone='10632678',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
     </div>
+
     <main class="movie-grid" id="movie-display"></main>
 
     <nav class="bottom-nav">
-        <a href="index.html" style="color:var(--accent); text-decoration:none; text-align:center;"><i class="fas fa-home"></i><br><span style="font-size:10px;">Home</span></a>
-        <a href="admin.html" style="color:#888; text-decoration:none; text-align:center;"><i class="fas fa-user-shield"></i><br><span style="font-size:10px;">Admin</span></a>
+        <a href="index.html" class="nav-link active"><i class="fas fa-home"></i><br>Home</a>
+        <a href="admin.html" class="nav-link"><i class="fas fa-user-shield"></i><br>Admin</a>
     </nav>
 
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script>
         const firebaseConfig = { apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com" };
         firebase.initializeApp(firebaseConfig);
-        firebase.database().ref('movies').on('value', snap => {
-            const m = snap.val() ? Object.keys(snap.val()).map(k => ({id:k, ...snap.val()[k]})) : [];
-            document.getElementById('movie-display').innerHTML = m.reverse().map(i => `<div class="movie-card" onclick="location.href='go.html?id=${i.id}'"><img src="${i.poster}"><div style="padding:5px; font-size:10px; text-align:center;">${i.title}</div></div>`).join('');
-            document.getElementById('carousel').innerHTML = m.slice(0, 5).map((i, idx) => `<div class="carousel-item" style="transform: rotateY(${idx * 72}deg) translateZ(250px);" onclick="location.href='go.html?id=${i.id}'"><img src="${i.poster}"></div>`).join('');
+        const db = firebase.database();
+
+        db.ref('movies').on('value', snap => {
+            const data = snap.val();
+            const movies = data ? Object.keys(data).map(k => ({id:k, ...data[k]})) : [];
+            const display = document.getElementById('movie-display');
+            const carousel = document.getElementById('carousel');
+
+            display.innerHTML = movies.reverse().map(m => `
+                <div class="movie-card" onclick="location.href='go.html?id=${m.id}'">
+                    <img src="${m.poster}">
+                    <div class="movie-title">${m.title}</div>
+                </div>
+            `).join('');
+
+            carousel.innerHTML = movies.slice(0, 5).map((m, idx) => `
+                <div class="carousel-item" style="transform: rotateY(${idx * 72}deg) translateZ(250px);" onclick="location.href='go.html?id=${m.id}'">
+                    <img src="${m.poster}">
+                </div>
+            `).join('');
         });
-        let a = 0; setInterval(() => { a -= 72; document.getElementById('carousel').style.transform = `rotateY(${a}deg)`; }, 4000);
+
+        let angle = 0;
+        setInterval(() => { angle -= 72; document.getElementById('carousel').style.transform = `rotateY(${angle}deg)`; }, 4000);
     </script>
 </body>
 </html>
