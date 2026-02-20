@@ -4,110 +4,76 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FastStream | Premium Home</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        :root { --primary: #e50914; --bg: #080808; --card-bg: #1a1a1a; --glass: rgba(255, 255, 255, 0.05); }
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: white; margin: 0; overflow-x: hidden; }
+        :root { --primary: #e50914; --bg: #000; --card-bg: #141414; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: var(--bg); color: white; margin: 0; }
 
-        /* Premium Navbar */
+        /* Navbar */
         header { 
-            padding: 15px 5%; 
-            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); 
+            padding: 15px 4%; background: rgba(0,0,0,0.9); 
             display: flex; justify-content: space-between; align-items: center; 
-            position: fixed; top: 0; width: 100%; z-index: 1000; box-sizing: border-box;
-            backdrop-filter: blur(10px);
+            position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px);
         }
-        .logo { font-size: 26px; font-weight: 900; color: var(--primary); text-decoration: none; letter-spacing: 1.5px; }
-        .nav-links a { color: #ccc; text-decoration: none; font-size: 14px; margin-left: 20px; transition: 0.3s; }
-        .nav-links a:hover { color: var(--primary); }
+        .logo { font-size: 24px; font-weight: 800; color: var(--primary); text-decoration: none; }
 
-        /* Premium Slider */
-        #slider { width: 100%; height: 75vh; position: relative; overflow: hidden; }
-        #slideContent { display: flex; height: 100%; transition: 1s cubic-bezier(0.6, 0, 0.2, 1); }
-        .slide-item { min-width: 100%; position: relative; }
-        .slide-item img { width: 100%; height: 100%; object-fit: cover; }
+        /* Hero Swiper Slider */
+        .swiper { width: 100%; height: 260px; margin-bottom: 20px; }
+        .swiper-slide { position: relative; cursor: pointer; }
+        .swiper-slide img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
         .slide-overlay { 
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 70%; 
-            background: linear-gradient(to top, var(--bg) 10%, transparent); 
+            position: absolute; bottom: 0; width: 100%; height: 60%; 
+            background: linear-gradient(transparent, var(--bg)); 
         }
-        .slide-info { position: absolute; bottom: 10%; left: 5%; max-width: 600px; }
-        .slide-info h2 { font-size: 3rem; margin: 0; text-transform: uppercase; }
+        .slide-title { position: absolute; bottom: 20px; left: 4%; font-size: 20px; font-weight: bold; text-shadow: 2px 2px 10px #000; }
 
-        /* Search & Filters */
-        .controls { padding: 30px 5% 10px; }
-        .search-box { 
-            background: var(--glass); border: 1px solid #333; padding: 12px 20px; 
-            border-radius: 30px; display: flex; align-items: center; gap: 10px;
+        /* Search Bar */
+        .search-area { padding: 0 4% 20px; }
+        #searchInput { 
+            width: 100%; padding: 12px 20px; border-radius: 5px; border: 1px solid #333; 
+            background: #1a1a1a; color: white; outline: none; box-sizing: border-box;
         }
-        .search-box input { background: none; border: none; color: white; width: 100%; outline: none; font-size: 16px; }
 
-        .genre-container { display: flex; gap: 10px; padding: 20px 5%; overflow-x: auto; scrollbar-width: none; }
-        .genre-btn { 
-            background: #1a1a1a; color: white; padding: 10px 22px; border-radius: 5px; 
-            border: 1px solid #333; cursor: pointer; transition: 0.3s; font-size: 14px;
-        }
-        .genre-btn.active { background: var(--primary); border-color: var(--primary); }
-
-        /* Premium Grid */
+        /* Movie Grid */
         .movie-grid { 
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
-            gap: 20px; padding: 20px 5% 50px; 
+            display: grid; grid-template-columns: repeat(2, 1fr); 
+            gap: 12px; padding: 0 4% 40px; 
         }
-        .movie-card { 
-            position: relative; border-radius: 8px; overflow: hidden; 
-            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
-        .movie-card:hover { transform: translateY(-10px) scale(1.05); }
+        .movie-card { background: var(--card-bg); border-radius: 8px; overflow: hidden; position: relative; border: 1px solid #222; }
         .movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
-        .movie-badge { 
-            position: absolute; top: 10px; left: 10px; background: var(--primary); 
-            font-size: 11px; padding: 3px 8px; border-radius: 3px; font-weight: bold; 
-        }
-        .card-info { 
-            position: absolute; bottom: 0; width: 100%; padding: 15px 10px;
-            background: linear-gradient(transparent, rgba(0,0,0,0.9)); 
-            opacity: 0; transition: 0.3s;
-        }
-        .movie-card:hover .card-info { opacity: 1; }
-        .card-info h3 { font-size: 13px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-badge { position: absolute; top: 8px; left: 8px; background: var(--primary); font-size: 10px; padding: 3px 7px; border-radius: 3px; font-weight: bold; }
+        .card-title { padding: 10px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        @media (max-width: 600px) {
-            #slider { height: 40vh; }
-            .slide-info h2 { font-size: 1.5rem; }
-            .movie-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        @media (min-width: 768px) {
+            .swiper { height: 450px; }
+            .movie-grid { grid-template-columns: repeat(5, 1fr); }
         }
     </style>
 </head>
 <body>
 
-    <header id="navbar">
+    <header>
         <a href="index.html" class="logo">FASTSTREAM</a>
-        <div class="nav-links">
-            <a href="request.html">REQUEST</a>
-        </div>
+        <a href="request.html" style="color:white; text-decoration:none;"><i class="fas fa-plus"></i> Request</a>
     </header>
 
-    <div id="slider"><div id="slideContent"></div></div>
-
-    <div class="controls">
-        <div class="search-box">
-            <i class="fas fa-search" style="color:#666"></i>
-            <input type="text" id="searchInput" placeholder="Search by title..." onkeyup="searchMovie()">
-        </div>
+    <div class="swiper mySwiper">
+        <div class="swiper-wrapper" id="sliderWrapper">
+            </div>
+        <div class="swiper-pagination"></div>
     </div>
 
-    <div class="genre-container" id="genres">
-        <button class="genre-btn active" onclick="filterGenre('All', this)">All</button>
-        <button class="genre-btn" onclick="filterGenre('Action', this)">Action</button>
-        <button class="genre-btn" onclick="filterGenre('South', this)">South Indian</button>
-        <button class="genre-btn" onclick="filterGenre('Hindi', this)">Hindi Dubbed</button>
+    <div class="search-area">
+        <input type="text" id="searchInput" placeholder="Search movies..." onkeyup="searchMovie()">
     </div>
 
     <div class="movie-grid" id="movieGrid"></div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4",
@@ -121,35 +87,41 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Load Movies
         db.ref('movies').on('value', (snap) => {
             const grid = document.getElementById('movieGrid');
-            const slider = document.getElementById('slideContent');
+            const slider = document.getElementById('sliderWrapper');
             grid.innerHTML = ''; slider.innerHTML = '';
             let count = 0;
 
             snap.forEach((child) => {
                 const m = child.val();
-                const mId = child.key;
+                const id = child.key;
 
                 // Slider (Latest 5)
                 if(count < 5) {
                     slider.innerHTML += `
-                    <div class="slide-item" onclick="location.href='go.html?id=${mId}'">
+                    <div class="swiper-slide" onclick="location.href='go.html?id=${id}'">
                         <img src="${m.poster}">
                         <div class="slide-overlay"></div>
-                        <div class="slide-info"><h2>${m.title}</h2></div>
+                        <div class="slide-title">${m.title}</div>
                     </div>`;
                     count++;
                 }
 
-                // Movie Grid
+                // Grid Items
                 grid.innerHTML += `
-                <div class="movie-card" data-genre="${m.genre || ''}" onclick="location.href='go.html?id=${mId}'">
-                    <span class="movie-badge">${m.quality || 'HD'}</span>
+                <div class="movie-card" onclick="location.href='go.html?id=${id}'">
+                    <span class="card-badge">${m.quality || 'HD'}</span>
                     <img src="${m.poster}">
-                    <div class="card-info"><h3>${m.title}</h3></div>
+                    <div class="card-title">${m.title}</div>
                 </div>`;
+            });
+
+            // Initialize Swiper after data loads
+            new Swiper(".mySwiper", {
+                loop: true,
+                autoplay: { delay: 3000, disableOnInteraction: false },
+                pagination: { el: ".swiper-pagination", clickable: true },
             });
         });
 
@@ -159,23 +131,6 @@
                 c.style.display = c.innerText.toLowerCase().includes(val) ? "block" : "none";
             });
         }
-
-        function filterGenre(genre, btn) {
-            document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            document.querySelectorAll('.movie-card').forEach(c => {
-                const cGenre = c.getAttribute('data-genre');
-                c.style.display = (genre === 'All' || cGenre.includes(genre)) ? "block" : "none";
-            });
-        }
-
-        // Auto Slider Animation
-        let idx = 0;
-        setInterval(() => {
-            idx = (idx + 1) % 5;
-            const sc = document.getElementById('slideContent');
-            if(sc) sc.style.transform = `translateX(-${idx * 100}%)`;
-        }, 5000);
     </script>
 </body>
 </html>
