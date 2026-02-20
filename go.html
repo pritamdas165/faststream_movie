@@ -3,40 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FastStream | Watch</title>
+    <title>Fast8Movie | Download Details</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        :root { --primary: #e50914; --bg: #0f0f0f; --card-bg: #1a1a1a; --border: #2b2b2b; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: white; margin: 0; }
-        header { padding: 15px 5%; background: rgba(0,0,0,0.8); display: flex; align-items: center; }
+        :root { --primary: #e50914; --bg: #0a0a0a; --card-bg: #161616; --border: #252525; --text: #ffffff; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 30px; }
+        
+        header { padding: 15px 5%; background: rgba(0,0,0,0.8); display: flex; align-items: center; position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); }
+        .back-btn { color: white; font-size: 20px; margin-right: 15px; cursor: pointer; text-decoration: none; }
+        .logo { font-size: 1.2rem; font-weight: 900; color: var(--primary); text-decoration: none; letter-spacing: 1px; }
+
         .container { padding: 20px 5%; max-width: 800px; margin: 0 auto; }
-        .movie-header { display: flex; gap: 20px; flex-wrap: wrap; }
-        .poster-box { width: 150px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
-        .poster-box img { width: 100%; }
-        .screenshot-grid img { width: 100%; border-radius: 8px; margin-top: 10px; border: 1px solid var(--border); }
-        .download-btn { display: block; text-align: center; padding: 15px; background: var(--primary); color: white; text-decoration: none; border-radius: 10px; font-weight: 800; margin-top: 20px; }
+        
+        /* Movie Detail Card */
+        .movie-info-section { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 30px; }
+        .poster-wrapper { width: 220px; border-radius: 15px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+        .poster-wrapper img { width: 100%; display: block; }
+        
+        .details-wrapper { flex: 1; min-width: 280px; }
+        .details-wrapper h1 { font-size: 28px; margin-bottom: 10px; font-weight: 900; }
+        .meta-tags { display: flex; gap: 10px; margin-bottom: 15px; }
+        .tag { background: var(--primary); padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+        .info-list { color: #aaa; font-size: 14px; line-height: 1.8; }
+        .info-list b { color: #eee; }
+
+        /* Screenshot Section */
+        .section-title { font-size: 18px; margin: 30px 0 15px; font-weight: bold; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+        .section-title::after { content: ""; height: 1px; background: var(--border); flex: 1; }
+        .ss-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        .ss-grid img { width: 100%; border-radius: 12px; border: 1px solid var(--border); transition: 0.3s; }
+
+        /* Action Buttons */
+        .action-area { margin-top: 30px; }
+        .download-btn { 
+            display: flex; align-items: center; justify-content: center; gap: 12px;
+            width: 100%; padding: 18px; background: var(--primary); color: white; 
+            text-decoration: none; border-radius: 15px; font-weight: 900; 
+            font-size: 1.1rem; transition: 0.3s; box-shadow: 0 5px 20px rgba(229, 9, 20, 0.3);
+        }
+        .download-btn:hover { transform: translateY(-3px); background: #b20710; }
+        
+        .play-btn { 
+            display: flex; align-items: center; justify-content: center; gap: 12px;
+            width: 100%; padding: 15px; background: white; color: black; 
+            text-decoration: none; border-radius: 15px; font-weight: 800; 
+            margin-top: 15px; transition: 0.3s;
+        }
+
+        @media (max-width: 600px) { .poster-wrapper { width: 100%; } .details-wrapper h1 { font-size: 22px; } }
     </style>
 </head>
 <body>
-    <header><a href="index.html" style="color:white; margin-right:20px;"><i class="fas fa-arrow-left"></i></a><span style="color:var(--primary); font-weight:900;">FASTSTREAM</span></header>
-    <div class="container" id="details">Loading...</div>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fas fa-chevron-left"></i></a>
+        <a href="index.html" class="logo">FAST8MOVIE</a>
+    </header>
+
+    <div class="container" id="content-loader">
+        <p style="text-align:center; padding:50px;">Fetching movie data...</p>
+    </div>
+
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
     <script>
-        const firebaseConfig = { apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", authDomain: "movie-project-b78b4.firebaseapp.com", databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com", projectId: "movie-project-b78b4", storageBucket: "movie-project-b78b4.firebasestorage.app", messagingSenderId: "819696212001", appId: "1:819696212001:web:379b19305c6d604b2deb60" };
-        firebase.initializeApp(firebaseConfig); const db = firebase.database();
-        const id = new URLSearchParams(window.location.search).get('id');
-        db.ref('movies/' + id).on('value', (snap) => {
-            const m = snap.val();
-            let ss = ''; m.screenshots?.forEach(s => { if(s) ss += `<img src="${s}">`; });
-            document.getElementById('details').innerHTML = `
-                <div class="movie-header">
-                    <div class="poster-box"><img src="${m.poster}"></div>
-                    <div class="info"><h1>${m.title}</h1><p>Genre: ${m.genre}</p><p>Quality: ${m.quality}</p></div>
-                </div>
-                <h3 style="margin-top:30px;">Screenshots</h3><div class="screenshot-grid">${ss}</div>
-                <a href="${m.download}" class="download-btn">DOWNLOAD NOW</a>`;
-        });
+        const firebaseConfig = {
+            apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4",
+            authDomain: "movie-project-b78b4.firebaseapp.com",
+            databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com",
+            projectId: "movie-project-b78b4",
+            storageBucket: "movie-project-b78b4.firebasestorage.app",
+            messagingSenderId: "819696212001",
+            appId: "1:819696212001:web:379b19305c6d604b2deb60"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // Get Movie ID from URL
+        const params = new URLSearchParams(window.location.search);
+        const movieId = params.get('id');
+
+        if (movieId) {
+            db.ref('movies/' + movieId).on('value', (snap) => {
+                const m = snap.val();
+                if (!m) {
+                    document.getElementById('content-loader').innerHTML = "Movie Not Found!";
+                    return;
+                }
+
+                // Screenshot Handler
+                let ssHtml = "";
+                if(m.screenshots && m.screenshots.length > 0) {
+                    m.screenshots.forEach(link => {
+                        if(link) ssHtml += `<img src="${link}" alt="Screenshot">`;
+                    });
+                }
+
+                document.getElementById('content-loader').innerHTML = `
+                    <div class="movie-info-section">
+                        <div class="poster-wrapper">
+                            <img src="${m.poster}" alt="Poster">
+                        </div>
+                        <div class="details-wrapper">
+                            <h1>${m.title}</h1>
+                            <div class="meta-tags">
+                                <span class="tag">${m.genre}</span>
+                                <span class="tag" style="background:#333;">${m.quality || 'HDRip'}</span>
+                            </div>
+                            <div class="info-list">
+                                <p><b>Audio:</b> Hindi + English (Dual Audio)</p>
+                                <p><b>Resolution:</b> 480p, 720p, 1080p</p>
+                                <p><b>Status:</b> High Speed Server Available</p>
+                                <p style="margin-top:10px;"><b>Plot:</b> Download ${m.title} in high quality. Enjoy the best streaming experience with Fast8Movie.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-title"><i class="fas fa-camera"></i> SCREENSHOTS</div>
+                    <div class="ss-grid">${ssHtml || '<p style="color:#555;">No screenshots available.</p>'}</div>
+
+                    <div class="action-area">
+                        <a href="${m.download}" class="download-btn" target="_blank">
+                            <i class="fas fa-cloud-download-alt"></i> GENERATE DOWNLOAD LINKS
+                        </a>
+                        <a href="${m.download}" class="play-btn" target="_blank">
+                            <i class="fas fa-play-circle"></i> WATCH ONLINE FREE
+                        </a>
+                    </div>
+                `;
+            });
+        }
     </script>
 </body>
 </html>
