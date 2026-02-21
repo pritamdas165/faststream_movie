@@ -2,38 +2,31 @@
 <html lang="en">
 <head>
     <script src="https://quge5.com/88/tag.min.js" data-zone="212786" async data-cfasync="false"></script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stream Details</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Step 1</title>
     <style>
-        body { background: #0a0a0a; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
-        .details-card { background: #151515; padding: 25px; border-radius: 20px; max-width: 400px; margin: auto; border: 1px solid #222; }
-        img { width: 100%; border-radius: 15px; margin-bottom: 15px; }
-        .btn { display: block; background: #e50914; color: white; padding: 15px; border-radius: 10px; text-decoration: none; font-weight: bold; margin-top: 20px; }
+        body { background: #050505; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; text-align: center; }
+        .card { background: #111; padding: 30px; border-radius: 20px; border: 1px solid #222; width: 90%; max-width: 380px; }
+        .btn { display: block; background: #e50914; color: white; padding: 18px; border-radius: 12px; text-decoration: none; font-weight: bold; cursor: pointer; border: none; width: 100%; margin-top: 20px; }
+        #next { display: none; background: #008148; }
     </style>
 </head>
 <body>
-    <div class="details-card">
-        <img id="poster" src="">
-        <h2 id="title">Loading...</h2>
-        <a id="goBtn" href="https://omg10.com/4/10626413" target="_blank" class="btn">GO TO DOWNLOAD PAGE</a>
+    <div class="card">
+        <h2>Verification Step 1</h2>
+        <p id="msg">Click to verify you are not a bot.</p>
+        <button id="adBtn" class="btn">VERIFY NOW</button>
+        <a id="next" href="#" class="btn">CONTINUE TO STEP 2</a>
     </div>
-
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script>
         const id = new URLSearchParams(window.location.search).get('id');
-        firebase.initializeApp({ apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com" });
-        
-        firebase.database().ref('movies/' + id).once('value', snap => {
-            const m = snap.val();
-            document.getElementById('poster').src = m.poster;
-            document.getElementById('title').innerText = m.title;
-            
-            document.getElementById('goBtn').onclick = () => {
-                setTimeout(() => { location.href = 'download.html?id=' + id; }, 1000);
-            };
-        });
+        document.getElementById('adBtn').onclick = function() {
+            window.open("https://omg10.com/4/10626413", "_blank");
+            this.style.display = "none";
+            const next = document.getElementById('next');
+            next.style.display = "block";
+            next.href = "verify.html?id=" + id;
+        };
     </script>
 </body>
 </html>
