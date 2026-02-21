@@ -11,24 +11,18 @@
     </style>
 </head>
 <body>
-    <div>
-        <div class="timer" id="t">10</div>
-        <button id="btn" class="btn">START DOWNLOAD NOW</button>
-    </div>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <div><div class="timer" id="t">10</div><button id="btn" class="btn">START DOWNLOAD NOW</button></div>
     <script>
-        const id = new URLSearchParams(window.location.search).get('id');
-        firebase.initializeApp({ apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com" });
-        let link = "";
-        firebase.database().ref('movies/' + id).once('value', snap => { link = snap.val().download; });
+        const urlP = new URLSearchParams(window.location.search);
+        const qLink = atob(urlP.get('q'));
         let s = 10;
         const count = setInterval(() => {
             s--; document.getElementById('t').innerText = s;
             if(s<=0) {
                 clearInterval(count); document.getElementById('t').style.display = "none";
                 const b = document.getElementById('btn'); b.style.display = "block";
-                b.onclick = () => { window.open("https://omg10.com/4/10626413", "_blank"); setTimeout(() => { window.location.href = link; }, 500); };
+                b.onclick = () => { window.open("https://omg10.com/4/10626413", "_blank"); 
+                setTimeout(() => { window.location.href = qLink; }, 500); };
             }
         }, 1000);
     </script>
