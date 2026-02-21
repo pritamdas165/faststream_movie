@@ -1,188 +1,55 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie Manager Pro</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        :root { --bg: #0a0a0a; --card: #151515; --accent: #e50914; --input: #1a1a1a; }
-        body { background: var(--bg); color: white; font-family: 'Poppins', sans-serif; padding: 15px; }
-        .container { max-width: 600px; margin: 0 auto; }
-        
-        /* Stats Box */
-        .stats { background: linear-gradient(45deg, #1a1a1a, #222); padding: 15px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #333; }
-        .stats h3 { margin: 0; font-size: 14px; color: #888; }
-        .stats span { color: var(--accent); font-size: 1.2rem; font-weight: bold; }
-
-        .admin-box { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #222; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h2 { text-align: center; color: var(--accent); margin-bottom: 25px; font-size: 1.5rem; }
-        
-        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .input-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-size: 12px; color: #777; font-weight: 500; }
-        input, select, textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: var(--input); color: white; outline: none; font-size: 14px; box-sizing: border-box; }
-        input:focus, select:focus, textarea:focus { border-color: var(--accent); }
-        textarea { height: 80px; resize: none; }
-        
-        .add-btn { width: 100%; padding: 15px; background: var(--accent); border: none; color: white; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1rem; margin-top: 10px; transition: 0.3s; }
-        .add-btn:hover { background: #ff1e2a; transform: translateY(-2px); }
-
-        /* Modern Movie List */
-        .list-header { margin-top: 40px; border-bottom: 1px solid #333; padding-bottom: 10px; display: flex; justify-content: space-between; }
-        .movie-item { display: flex; align-items: center; background: #111; padding: 12px; border-radius: 12px; margin-top: 15px; border: 1px solid #222; }
-        .movie-item img { width: 60px; height: 85px; border-radius: 8px; object-fit: cover; margin-right: 15px; }
-        .item-details { flex-grow: 1; }
-        .item-details h4 { font-size: 14px; margin: 0; color: #efefef; }
-        .item-details span { font-size: 11px; color: var(--accent); background: rgba(229,9,20,0.1); padding: 2px 6px; border-radius: 4px; margin-right: 5px; }
-        .item-details p { font-size: 11px; color: #555; margin-top: 5px; }
-        .actions { display: flex; gap: 15px; }
-        .del-btn { color: #444; cursor: pointer; transition: 0.3s; font-size: 1.1rem; }
-        .del-btn:hover { color: var(--accent); }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <div class="stats">
-        <h3><i class="fas fa-database"></i> Total Movies</h3>
-        <span id="movieCount">0</span>
-    </div>
-
-    <div class="admin-box">
-        <h2><i class="fas fa-film"></i> Movie Manager Pro</h2>
-        
-        <div class="input-group">
-            <label>Movie Full Title</label>
-            <input type="text" id="title" placeholder="e.g. Pushpa 2: The Rule (2024)">
-        </div>
-        
-        <div class="input-group">
-            <label>Poster URL</label>
-            <input type="text" id="poster" placeholder="https://link-to-image.jpg">
-        </div>
-
-        <div class="grid-inputs">
-            <div class="input-group">
-                <label>Category</label>
-                <select id="category">
-                    <option value="Action">Action</option>
-                    <option value="Horror">Horror</option>
-                    <option value="Comedy">Comedy</option>
-                    <option value="Drama">Drama</option>
-                    <option value="Sci-Fi">Sci-Fi</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label>Quality</label>
-                <select id="quality">
-                    <option value="4K UHD">4K UHD</option>
-                    <option value="1080p HD">1080p HD</option>
-                    <option value="720p HD">720p HD</option>
-                    <option value="CAMRip">CAMRip</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="input-group">
-            <label>Short Description / Storyline</label>
-            <textarea id="desc" placeholder="Briefly explain the movie plot..."></textarea>
-        </div>
-        
-        <div class="input-group">
-            <label>Direct Download URL</label>
-            <input type="text" id="download" placeholder="Paste your file link here">
-        </div>
-        
-        <button class="add-btn" onclick="addMovie()"><i class="fas fa-plus"></i> ADD MOVIE TO DATABASE</button>
-    </div>
-
-    <div class="list-header">
-        <h3 style="font-size: 16px;">Recently Uploaded</h3>
-        <i class="fas fa-sync-alt" style="color: #444; cursor: pointer;" onclick="location.reload()"></i>
+<div class="admin-box">
+    <h2><i class="fas fa-user-shield"></i> Advanced Movie Manager</h2>
+    
+    <div class="input-group">
+        <label>Movie Title</label>
+        <input type="text" id="title" placeholder="Pushpa 2: The Rule (2024)">
     </div>
     
-    <div id="list">
-        </div>
+    <div class="input-group">
+        <label>Poster URL</label>
+        <input type="text" id="poster" placeholder="Main Poster Link">
+    </div>
+
+    <div class="input-group">
+        <label>Movie Screenshots (Comma separated links)</label>
+        <textarea id="screens" placeholder="link1.jpg, link2.jpg, link3.jpg"></textarea>
+    </div>
+
+    <div class="input-group">
+        <label>Storyline / Description</label>
+        <textarea id="desc" placeholder="Write movie plot here..."></textarea>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div class="input-group"><label>480p Link</label><input type="text" id="link480" placeholder="480p URL"></div>
+        <div class="input-group"><label>720p Link</label><input type="text" id="link720" placeholder="720p URL"></div>
+        <div class="input-group"><label>1080p Link</label><input type="text" id="link1080" placeholder="1080p URL"></div>
+        <div class="input-group"><label>4K Link</label><input type="text" id="link4K" placeholder="4K URL"></div>
+    </div>
+    
+    <button class="add-btn" onclick="addMovie()">SAVE MOVIE DATA</button>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-
 <script>
-    const firebaseConfig = { 
-        apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", 
-        databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com" 
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
     function addMovie() {
-        const title = document.getElementById('title').value;
-        const poster = document.getElementById('poster').value;
-        const category = document.getElementById('category').value;
-        const quality = document.getElementById('quality').value;
-        const desc = document.getElementById('desc').value;
-        const download = document.getElementById('download').value;
+        const data = {
+            title: document.getElementById('title').value,
+            poster: document.getElementById('poster').value,
+            screens: document.getElementById('screens').value, // screenshots
+            desc: document.getElementById('desc').value,
+            link480: document.getElementById('link480').value,
+            link720: document.getElementById('link720').value,
+            link1080: document.getElementById('link1080').value,
+            link4K: document.getElementById('link4K').value,
+            category: document.getElementById('category').value
+        };
 
-        if(title && poster && download) {
-            db.ref('movies').push({
-                title, poster, category, quality, desc, download
-            }).then(() => {
-                alert("Movie successfully added!");
-                // Clear Form
-                document.getElementById('title').value = '';
-                document.getElementById('poster').value = '';
-                document.getElementById('desc').value = '';
-                document.getElementById('download').value = '';
+        if(data.title && data.poster) {
+            db.ref('movies').push(data).then(() => {
+                alert("Movie Added with Multiple Qualities!");
+                location.reload();
             });
-        } else {
-            alert("Please fill the Title, Poster, and Download link!");
-        }
-    }
-
-    db.ref('movies').on('value', snap => {
-        const data = snap.val();
-        const listDiv = document.getElementById('list');
-        const countSpan = document.getElementById('movieCount');
-        
-        if(!data) {
-            listDiv.innerHTML = "<p style='text-align:center; color:#444; margin-top:20px;'>No movies found.</p>";
-            countSpan.innerText = "0";
-            return;
-        }
-
-        const keys = Object.keys(data);
-        countSpan.innerText = keys.length;
-        
-        let html = '';
-        keys.reverse().forEach(key => {
-            const m = data[key];
-            html += `
-            <div class="movie-item">
-                <img src="${m.poster}">
-                <div class="item-details">
-                    <h4>${m.title}</h4>
-                    <div style="margin-top:5px;">
-                        <span>${m.category || 'N/A'}</span>
-                        <span style="background:rgba(255,255,255,0.05); color:#888;">${m.quality || 'HD'}</span>
-                    </div>
-                    <p>${m.desc ? m.desc.substring(0, 40) + '...' : 'No description'}</p>
-                </div>
-                <div class="actions">
-                    <i class="fas fa-trash-alt del-btn" onclick="deleteMovie('${key}')"></i>
-                </div>
-            </div>`;
-        });
-        listDiv.innerHTML = html;
-    });
-
-    function deleteMovie(id) {
-        if(confirm("Permanently delete this movie?")) {
-            db.ref('movies/' + id).remove();
         }
     }
 </script>
-
-</body>
-</html>
