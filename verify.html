@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://quge5.com/88/tag.min.js" data-zone="212786" async data-cfasync="false"></script>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Step 2</title>
+    <style>
+        body { background: #050505; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; text-align: center; }
+        .card { background: #111; padding: 30px; border-radius: 20px; width: 90%; max-width: 380px; }
+        .bar { width: 100%; background: #222; height: 10px; border-radius: 5px; margin: 20px 0; display: none; overflow: hidden; }
+        .fill { width: 0; height: 100%; background: #e50914; transition: 0.1s linear; }
+        .btn { display: block; background: #e50914; color: white; padding: 18px; border-radius: 12px; text-decoration: none; font-weight: bold; border: none; width: 100%; }
+        #final { display: none; background: #008148; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Generating Link...</h2>
+        <button id="start" class="btn">GENERATE SECURE LINK</button>
+        <div class="bar" id="bar"><div class="fill" id="fill"></div></div>
+        <a id="final" href="#" class="btn">GO TO FINAL STEP</a>
+    </div>
+    <script>
+        const id = new URLSearchParams(window.location.search).get('id');
+        document.getElementById('start').onclick = function() {
+            window.open("https://omg10.com/4/10626413", "_blank");
+            this.style.display = "none";
+            const bar = document.getElementById('bar');
+            bar.style.display = "block";
+            let w = 0;
+            const int = setInterval(() => {
+                w++; document.getElementById('fill').style.width = w + "%";
+                if(w>=100) { 
+                    clearInterval(int); bar.style.display = "none"; 
+                    const f = document.getElementById('final');
+                    f.style.display = "block"; f.href = "download.html?id=" + id;
+                }
+            }, 50);
+        };
+    </script>
+</body>
+</html>
