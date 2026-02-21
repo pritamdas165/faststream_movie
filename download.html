@@ -2,60 +2,35 @@
 <html lang="en">
 <head>
     <script src="https://quge5.com/88/tag.min.js" data-zone="212786" async data-cfasync="false"></script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Download - Fast8Movie</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Step 3</title>
     <style>
-        body { background: #0a0a0a; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .box { background: #151515; padding: 40px 30px; border-radius: 24px; border: 1px solid #222; text-align: center; width: 90%; max-width: 400px; }
-        .timer { font-size: 4rem; color: #e50914; margin: 20px 0; font-weight: 800; }
-        .btn { display: none; background: #e50914; color: white; padding: 18px; border-radius: 12px; text-decoration: none; font-weight: bold; width: 100%; box-sizing: border-box; font-size: 1.1rem; }
+        body { background: #050505; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; text-align: center; }
+        .timer { font-size: 5rem; color: #e50914; font-weight: 800; }
+        .btn { display: none; background: #e50914; color: white; padding: 18px; border-radius: 12px; text-decoration: none; font-weight: bold; font-size: 1.2rem; width: 300px; }
     </style>
 </head>
 <body>
-    <div class="box">
-        <div style="margin-bottom: 20px;">
-            <script>(function(s){s.dataset.zone='10632678',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
-        </div>
-        
-        <h3 id="msg">Generating Secure Link...</h3>
+    <div>
         <div class="timer" id="t">10</div>
-        
-        <a id="b" href="https://omg10.com/4/10626413" target="_blank" class="btn">START DOWNLOAD NOW</a>
+        <button id="btn" class="btn">START DOWNLOAD NOW</button>
     </div>
-
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script>
-        const firebaseConfig = { apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com" };
-        firebase.initializeApp(firebaseConfig);
-        
-        const movieId = new URLSearchParams(window.location.search).get('id');
-
-        if (movieId) {
-            firebase.database().ref('movies/' + movieId).once('value', snapshot => {
-                const data = snapshot.val();
-                if (data) {
-                    let s = 10;
-                    const timerEl = document.getElementById('t');
-                    const btnEl = document.getElementById('b');
-
-                    const countdown = setInterval(() => {
-                        s--; timerEl.innerText = s;
-                        if (s <= 0) {
-                            clearInterval(countdown);
-                            timerEl.style.display = 'none';
-                            document.getElementById('msg').innerText = "Link Ready!";
-                            btnEl.style.display = 'block';
-
-                            btnEl.onclick = function() {
-                                setTimeout(() => { window.location.href = data.download; }, 2000);
-                            };
-                        }
-                    }, 1000);
-                }
-            });
-        }
+        const id = new URLSearchParams(window.location.search).get('id');
+        firebase.initializeApp({ apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com" });
+        let link = "";
+        firebase.database().ref('movies/' + id).once('value', snap => { link = snap.val().download; });
+        let s = 10;
+        const count = setInterval(() => {
+            s--; document.getElementById('t').innerText = s;
+            if(s<=0) {
+                clearInterval(count); document.getElementById('t').style.display = "none";
+                const b = document.getElementById('btn'); b.style.display = "block";
+                b.onclick = () => { window.open("https://omg10.com/4/10626413", "_blank"); setTimeout(() => { window.location.href = link; }, 500); };
+            }
+        }, 1000);
     </script>
 </body>
 </html>
