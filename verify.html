@@ -21,19 +21,17 @@
         <a id="final" href="#" class="btn">GO TO FINAL STEP</a>
     </div>
     <script>
-        const id = new URLSearchParams(window.location.search).get('id');
+        const urlP = new URLSearchParams(window.location.search);
+        const id = urlP.get('id'); const q = urlP.get('q');
         document.getElementById('start').onclick = function() {
             window.open("https://omg10.com/4/10626413", "_blank");
             this.style.display = "none";
-            const bar = document.getElementById('bar');
-            bar.style.display = "block";
-            let w = 0;
-            const int = setInterval(() => {
+            const bar = document.getElementById('bar'); bar.style.display = "block";
+            let w = 0; const int = setInterval(() => {
                 w++; document.getElementById('fill').style.width = w + "%";
-                if(w>=100) { 
-                    clearInterval(int); bar.style.display = "none"; 
-                    const f = document.getElementById('final');
-                    f.style.display = "block"; f.href = "download.html?id=" + id;
+                if(w>=100) { clearInterval(int); bar.style.display = "none";
+                    const f = document.getElementById('final'); f.style.display = "block";
+                    f.href = `download.html?id=${id}&q=${q}`;
                 }
             }, 50);
         };
