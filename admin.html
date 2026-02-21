@@ -1,175 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="https://quge5.com/88/tag.min.js" data-zone="212786" async data-cfasync="false"></script>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Admin - Fast8Movie</title>
+    <title>Fast8Movie - Home</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        :root { --bg: #0a0a0a; --card: #151515; --accent: #e50914; --text: #eee; }
-        body { background: var(--bg); color: var(--text); font-family: 'Poppins', sans-serif; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; }
-        
-        /* Stats Dashboard */
-        .dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
-        .stat-card { background: var(--card); padding: 15px; border-radius: 12px; border: 1px solid #222; text-align: center; }
-        .stat-card i { color: var(--accent); font-size: 1.5rem; margin-bottom: 10px; }
-        .stat-card h3 { font-size: 12px; color: #888; margin: 0; }
-        .stat-card p { font-size: 1.2rem; font-weight: bold; margin: 5px 0 0; }
-
-        /* Form Styling */
-        .admin-box { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #222; margin-bottom: 30px; }
-        .input-group { margin-bottom: 12px; }
-        label { display: block; font-size: 12px; color: #888; margin-bottom: 5px; }
-        input, select, textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #0a0a0a; color: white; outline: none; box-sizing: border-box; }
-        textarea { height: 60px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        
-        .btn-main { width: 100%; padding: 15px; background: var(--accent); border: none; color: white; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 15px; }
-        .btn-edit { background: #2196F3; } /* Blue for Update */
-
-        /* Live Movie List */
-        .movie-list-item { display: flex; align-items: center; background: #111; padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #222; }
-        .movie-list-item img { width: 50px; height: 70px; border-radius: 6px; object-fit: cover; margin-right: 15px; }
-        .item-info { flex-grow: 1; }
-        .item-info h4 { font-size: 14px; margin: 0; }
-        .item-info p { font-size: 11px; color: #666; margin-top: 4px; }
-        .item-actions { display: flex; gap: 12px; }
-        .item-actions i { cursor: pointer; transition: 0.3s; }
-        .fa-edit { color: #2196F3; }
-        .fa-trash { color: var(--accent); }
+        :root { --bg: #050505; --accent: #e50914; --card: #111; }
+        body { background: var(--bg); color: white; font-family: 'Poppins', sans-serif; margin: 0; padding-bottom: 80px; overflow-x: hidden; }
+        header { padding: 15px; background: rgba(0,0,0,0.9); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #222; }
+        .logo { color: var(--accent); font-size: 1.5rem; font-weight: 900; text-decoration: none; }
+        .search-box { position: relative; width: 100%; margin-top: 10px; }
+        .search-box input { width: 100%; background: #1a1a1a; border: 1px solid #333; padding: 10px 40px; border-radius: 8px; color: white; outline: none; box-sizing: border-box; }
+        .search-box i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #666; }
+        .categories { display: flex; gap: 10px; overflow-x: auto; padding: 15px; scrollbar-width: none; }
+        .cat-btn { background: #1a1a1a; border: 1px solid #333; padding: 8px 15px; border-radius: 20px; white-space: nowrap; font-size: 12px; cursor: pointer; }
+        .cat-btn.active { background: var(--accent); }
+        .carousel-section { height: 300px; perspective: 1200px; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, #1a1a1a, #050505); }
+        .carousel-container { position: relative; width: 140px; height: 200px; transform-style: preserve-3d; transition: transform 1s; }
+        .carousel-item { position: absolute; width: 100%; height: 100%; border-radius: 12px; overflow: hidden; border: 1px solid #333; cursor: pointer; }
+        .carousel-item img { width: 100%; height: 100%; object-fit: cover; }
+        .movie-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px; }
+        .movie-card { background: var(--card); border-radius: 10px; overflow: hidden; border: 1px solid #222; cursor: pointer; }
+        .movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
+        .movie-title { padding: 5px; font-size: 10px; text-align: center; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 60px; background: #000; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #222; }
+        .nav-link { color: #666; text-decoration: none; font-size: 11px; text-align: center; }
+        .active { color: var(--accent); }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <div class="dashboard">
-        <div class="stat-card"><i class="fas fa-film"></i><h3>Movies</h3><p id="count">0</p></div>
-        <div class="stat-card"><i class="fas fa-eye"></i><h3>Live</h3><p>Active</p></div>
-        <div class="stat-card"><i class="fas fa-database"></i><h3>DB</h3><p>Firebase</p></div>
+    <header>
+        <a href="index.html" class="logo">FAST8MOVIE</a>
+        <div class="search-box"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="Search..." onkeyup="filterMovies()"></div>
+    </header>
+    <div class="categories" id="cat-container">
+        <div class="cat-btn active" onclick="filterCat('All', this)">All</div>
+        <div class="cat-btn" onclick="filterCat('Action', this)">Action</div>
+        <div class="cat-btn" onclick="filterCat('Horror', this)">Horror</div>
+        <div class="cat-btn" onclick="filterCat('Comedy', this)">Comedy</div>
     </div>
+    <div class="carousel-section" id="carousel-div"><div class="carousel-container" id="carousel"></div></div>
+    <div class="movie-grid" id="movie-display"></div>
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-link active"><i class="fas fa-home"></i><br>Home</a>
+        <a href="admin.html" class="nav-link"><i class="fas fa-user-shield"></i><br>Admin</a>
+    </nav>
 
-    <div class="admin-box" id="form-container">
-        <h2 id="form-title"><i class="fas fa-plus-circle"></i> Add New Movie</h2>
-        <input type="hidden" id="edit-id"> <div class="input-group"><label>Movie Title</label><input type="text" id="title"></div>
-        <div class="input-group"><label>Poster URL</label><input type="text" id="poster"></div>
-        <div class="input-group"><label>Screenshots (Comma separated)</label><textarea id="screens"></textarea></div>
-        <div class="input-group"><label>Storyline</label><textarea id="desc"></textarea></div>
-        
-        <div class="grid">
-            <div class="input-group"><label>480p Link</label><input type="text" id="l480"></div>
-            <div class="input-group"><label>720p Link</label><input type="text" id="l720"></div>
-            <div class="input-group"><label>1080p Link</label><input type="text" id="l1080"></div>
-            <div class="input-group"><label>4K Link</label><input type="text" id="l4k"></div>
-        </div>
-
-        <button class="btn-main" id="submit-btn" onclick="saveMovie()">SAVE MOVIE DATA</button>
-        <button class="btn-main btn-edit" id="cancel-btn" style="display:none; margin-top:5px; background:#444;" onclick="resetForm()">CANCEL EDIT</button>
-    </div>
-
-    <h3><i class="fas fa-list"></i> Managed Movies</h3>
-    <div id="movie-list"></div>
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-<script>
-    firebase.initializeApp({ apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com" });
-    const db = firebase.database();
-
-    // Add or Update Movie
-    function saveMovie() {
-        const id = document.getElementById('edit-id').value;
-        const data = {
-            title: document.getElementById('title').value,
-            poster: document.getElementById('poster').value,
-            screens: document.getElementById('screens').value,
-            desc: document.getElementById('desc').value,
-            l480: document.getElementById('l480').value,
-            l720: document.getElementById('l720').value,
-            l1080: document.getElementById('l1080').value,
-            l4k: document.getElementById('l4k').value
-        };
-
-        if(!data.title || !data.poster) return alert("Title and Poster are required!");
-
-        if(id) {
-            // Update existing
-            db.ref('movies/' + id).update(data).then(() => {
-                alert("Movie Updated!");
-                resetForm();
-            });
-        } else {
-            // Add new
-            db.ref('movies').push(data).then(() => {
-                alert("Movie Added!");
-                resetForm();
-            });
-        }
-    }
-
-    // Load Movies for List
-    db.ref('movies').on('value', snap => {
-        const movies = snap.val();
-        let html = "";
-        let count = 0;
-        if(movies) {
-            Object.keys(movies).reverse().forEach(key => {
-                count++;
-                const m = movies[key];
-                html += `
-                <div class="movie-list-item">
-                    <img src="${m.poster}">
-                    <div class="item-info">
-                        <h4>${m.title}</h4>
-                        <p>${m.l480 ? '480p ' : ''}${m.l720 ? '720p ' : ''}${m.l1080 ? '1080p ' : ''}${m.l4k ? '4K' : ''}</p>
-                    </div>
-                    <div class="item-actions">
-                        <i class="fas fa-edit" onclick="editMovie('${key}')"></i>
-                        <i class="fas fa-trash" onclick="deleteMovie('${key}')"></i>
-                    </div>
-                </div>`;
-            });
-        }
-        document.getElementById('movie-list').innerHTML = html;
-        document.getElementById('count').innerText = count;
-    });
-
-    // Edit Function
-    function editMovie(id) {
-        db.ref('movies/' + id).once('value', snap => {
-            const m = snap.val();
-            document.getElementById('edit-id').value = id;
-            document.getElementById('title').value = m.title;
-            document.getElementById('poster').value = m.poster;
-            document.getElementById('screens').value = m.screens || "";
-            document.getElementById('desc').value = m.desc || "";
-            document.getElementById('l480').value = m.l480 || "";
-            document.getElementById('l720').value = m.l720 || "";
-            document.getElementById('l1080').value = m.l1080 || "";
-            document.getElementById('l4k').value = m.l4k || "";
-
-            // UI Changes
-            document.getElementById('form-title').innerHTML = `<i class="fas fa-edit"></i> Editing: ${m.title}`;
-            document.getElementById('submit-btn').innerText = "UPDATE MOVIE";
-            document.getElementById('submit-btn').classList.add('btn-edit');
-            document.getElementById('cancel-btn').style.display = "block";
-            window.scrollTo(0, 0);
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script>
+        firebase.initializeApp({ apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com" });
+        const db = firebase.database(); let allMovies = [];
+        db.ref('movies').on('value', snap => {
+            allMovies = snap.val() ? Object.keys(snap.val()).map(k => ({id:k, ...snap.val()[k]})) : [];
+            displayMovies(allMovies); setupCarousel(allMovies.slice(-5));
         });
-    }
-
-    function deleteMovie(id) {
-        if(confirm("Delete this movie forever?")) db.ref('movies/' + id).remove();
-    }
-
-    function resetForm() {
-        document.getElementById('edit-id').value = "";
-        document.querySelectorAll('input, textarea').forEach(i => i.value = "");
-        document.getElementById('form-title').innerHTML = `<i class="fas fa-plus-circle"></i> Add New Movie`;
-        document.getElementById('submit-btn').innerText = "SAVE MOVIE DATA";
-        document.getElementById('submit-btn').classList.remove('btn-edit');
-        document.getElementById('cancel-btn').style.display = "none";
-    }
-</script>
-
+        function displayMovies(movies) {
+            document.getElementById('movie-display').innerHTML = movies.slice().reverse().map(m => `
+                <div class="movie-card" onclick="window.location.href='details.html?id=${m.id}'">
+                    <img src="${m.poster}"><span class="movie-title">${m.title}</span>
+                </div>`).join('');
+        }
+        function filterMovies() {
+            let val = document.getElementById('searchInput').value.toLowerCase();
+            displayMovies(allMovies.filter(m => m.title.toLowerCase().includes(val)));
+            document.getElementById('carousel-div').style.display = val ? "none" : "flex";
+        }
+        function filterCat(cat, btn) {
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
+            displayMovies(cat === 'All' ? allMovies : allMovies.filter(m => m.category === cat));
+        }
+        function setupCarousel(top) {
+            document.getElementById('carousel').innerHTML = top.map((m, idx) => `
+                <div class="carousel-item" style="transform: rotateY(${idx * 72}deg) translateZ(250px);" onclick="window.location.href='details.html?id=${m.id}'">
+                    <img src="${m.poster}">
+                </div>`).join('');
+        }
+        let a = 0; setInterval(() => { a -= 72; document.getElementById('carousel').style.transform = `rotateY(${a}deg)`; }, 4000);
+    </script>
 </body>
 </html>
