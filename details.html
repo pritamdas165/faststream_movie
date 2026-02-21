@@ -1,64 +1,47 @@
-<style>
-    .screen-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 20px 0; }
-    .screen-grid img { width: 100%; border-radius: 8px; border: 1px solid #333; }
-    
-    .quality-box { background: #111; padding: 20px; border-radius: 15px; border: 1px solid #222; margin-top: 20px; }
-    .quality-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #222; }
-    .quality-row:last-child { border: none; }
-    .q-btn { background: #e50914; color: white; padding: 8px 15px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: bold; }
-    .q-info { font-size: 14px; color: #ccc; }
-    .q-info span { color: #888; font-size: 11px; display: block; }
-</style>
-
-<div class="content">
-    <img id="poster" class="poster" src="">
-    <h1 id="title">Loading...</h1>
-    
-    <div class="desc">
-        <h3>Storyline</h3>
-        <p id="movie-desc"></p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://quge5.com/88/tag.min.js" data-zone="212786" async data-cfasync="false"></script>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Details</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { background: #050505; color: white; font-family: sans-serif; margin: 0; padding-bottom: 50px; }
+        .hero { height: 40vh; background-size: cover; background-position: center; filter: blur(15px) brightness(0.3); position: fixed; width: 100%; z-index: -1; }
+        .content { padding: 30px 20px; text-align: center; }
+        .poster { width: 180px; border-radius: 12px; border: 3px solid #e50914; margin-top: 20px; }
+        .desc-box { background: #111; padding: 20px; border-radius: 15px; margin: 20px 0; border: 1px solid #222; text-align: left; }
+        .screen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 25px; }
+        .screen-grid img { width: 100%; border-radius: 6px; border: 1px solid #333; }
+        .quality-row { display: flex; justify-content: space-between; align-items: center; background: #1a1a1a; padding: 15px; border-radius: 10px; margin-bottom: 8px; border: 1px solid #333; }
+        .q-btn { background: #e50914; color: white; padding: 8px 15px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <div id="hero" class="hero"></div>
+    <div class="content">
+        <img id="poster" class="poster">
+        <h1 id="title">Loading...</h1>
+        <div class="desc-box"><h3>Storyline</h3><p id="movie-desc"></p></div>
+        <h3>Movie Screenshots</h3><div class="screen-grid" id="screens"></div>
+        <h3>Choose Quality</h3><div id="links"></div>
     </div>
-
-    <h3>Screenshots</h3>
-    <div class="screen-grid" id="screen-container"></div>
-
-    <div class="quality-box">
-        <h3>Download Links</h3>
-        <div id="links-container"></div>
-    </div>
-</div>
-
-<script>
-    firebase.database().ref('movies/' + id).once('value', snap => {
-        const m = snap.val();
-        document.getElementById('poster').src = m.poster;
-        document.getElementById('title').innerText = m.title;
-        document.getElementById('movie-desc').innerText = m.desc || "No description available.";
-
-        // Screenshots Display
-        if(m.screens) {
-            const ss = m.screens.split(',');
-            document.getElementById('screen-container').innerHTML = ss.map(url => `<img src="${url.trim()}">`).join('');
-        }
-
-        // Quality Links Logic
-        const qualities = [
-            { label: '480p - SD', size: '400MB', link: m.link480 },
-            { label: '720p - HD', size: '1.2GB', link: m.link720 },
-            { label: '1080p - Full HD', size: '2.5GB', link: m.link1080 },
-            { label: '4K - Ultra HD', size: '5GB', link: m.link4K }
-        ];
-
-        let linkHTML = "";
-        qualities.forEach(q => {
-            if(q.link) {
-                linkHTML += `
-                <div class="quality-row">
-                    <div class="q-info">${q.label} <span>Size: ${q.size}</span></div>
-                    <a href="go.html?id=${id}&q=${btoa(q.link)}" class="q-btn">DOWNLOAD</a>
-                </div>`;
-            }
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script>
+        const id = new URLSearchParams(window.location.search).get('id');
+        firebase.initializeApp({ apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com" });
+        firebase.database().ref('movies/' + id).once('value', snap => {
+            const m = snap.val();
+            document.getElementById('poster').src = m.poster;
+            document.getElementById('hero').style.backgroundImage = `url(${m.poster})`;
+            document.getElementById('title').innerText = m.title;
+            document.getElementById('movie-desc').innerText = m.desc || "Action packed movie.";
+            if(m.screens) document.getElementById('screens').innerHTML = m.screens.split(',').map(s => `<img src="${s.trim()}">`).join('');
+            
+            const qs = [{n:'480p SD', l:m.l480}, {n:'720p HD', l:m.l720}, {n:'1080p FHD', l:m.l1080}, {n:'4K UHD', l:m.l4k}];
+            document.getElementById('links').innerHTML = qs.map(q => q.l ? `<div class="quality-row"><span>${q.n}</span><a href="go.html?id=${id}&q=${btoa(q.l)}" class="q-btn">DOWNLOAD</a></div>` : '').join('');
         });
-        document.getElementById('links-container').innerHTML = linkHTML;
-    });
-</script>
+    </script>
+</body>
+</html>
