@@ -1,83 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script src="https://quge5.com/88/tag.min.js" data-zone="212786" async data-cfasync="false"></script>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fast8Movie - Home</title>
+    <title>Admin - Fast8Movie</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        :root { --bg: #050505; --accent: #e50914; --card: #111; }
-        body { background: var(--bg); color: white; font-family: 'Poppins', sans-serif; margin: 0; padding-bottom: 80px; overflow-x: hidden; }
-        header { padding: 15px; background: rgba(0,0,0,0.9); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #222; }
-        .logo { color: var(--accent); font-size: 1.5rem; font-weight: 900; text-decoration: none; }
-        .search-box { position: relative; width: 100%; margin-top: 10px; }
-        .search-box input { width: 100%; background: #1a1a1a; border: 1px solid #333; padding: 10px 40px; border-radius: 8px; color: white; outline: none; box-sizing: border-box; }
-        .search-box i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #666; }
-        .categories { display: flex; gap: 10px; overflow-x: auto; padding: 15px; scrollbar-width: none; }
-        .cat-btn { background: #1a1a1a; border: 1px solid #333; padding: 8px 15px; border-radius: 20px; white-space: nowrap; font-size: 12px; cursor: pointer; }
-        .cat-btn.active { background: var(--accent); }
-        .carousel-section { height: 300px; perspective: 1200px; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, #1a1a1a, #050505); }
-        .carousel-container { position: relative; width: 140px; height: 200px; transform-style: preserve-3d; transition: transform 1s; }
-        .carousel-item { position: absolute; width: 100%; height: 100%; border-radius: 12px; overflow: hidden; border: 1px solid #333; cursor: pointer; }
-        .carousel-item img { width: 100%; height: 100%; object-fit: cover; }
-        .movie-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px; }
-        .movie-card { background: var(--card); border-radius: 10px; overflow: hidden; border: 1px solid #222; cursor: pointer; }
-        .movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
-        .movie-title { padding: 5px; font-size: 10px; text-align: center; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 60px; background: #000; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #222; }
-        .nav-link { color: #666; text-decoration: none; font-size: 11px; text-align: center; }
-        .active { color: var(--accent); }
+        :root { --bg: #0a0a0a; --card: #151515; --accent: #e50914; }
+        body { background: var(--bg); color: #eee; font-family: sans-serif; padding: 15px; }
+        .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+        .stat-card { background: var(--card); padding: 10px; border-radius: 10px; text-align: center; border: 1px solid #222; }
+        .admin-box { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #222; }
+        input, select, textarea { width: 100%; padding: 10px; margin-bottom: 10px; background: #000; color: white; border: 1px solid #333; border-radius: 5px; box-sizing: border-box;}
+        .btn { width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .movie-list-item { display: flex; align-items: center; background: #111; padding: 10px; border-radius: 10px; margin-top: 10px; border: 1px solid #222; }
+        .movie-list-item img { width: 40px; height: 55px; border-radius: 4px; margin-right: 15px; }
     </style>
 </head>
 <body>
-    <header>
-        <a href="index.html" class="logo">FAST8MOVIE</a>
-        <div class="search-box"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="Search..." onkeyup="filterMovies()"></div>
-    </header>
-    <div class="categories" id="cat-container">
-        <div class="cat-btn active" onclick="filterCat('All', this)">All</div>
-        <div class="cat-btn" onclick="filterCat('Action', this)">Action</div>
-        <div class="cat-btn" onclick="filterCat('Horror', this)">Horror</div>
-        <div class="cat-btn" onclick="filterCat('Comedy', this)">Comedy</div>
+    <div class="stat-grid">
+        <div class="stat-card"><h3>Movies</h3><p id="m-count">0</p></div>
+        <div class="stat-card"><h3>Requests</h3><p id="r-count">0</p></div>
+        <div class="stat-card"><h3>Total DL</h3><p id="t-dl">0</p></div>
     </div>
-    <div class="carousel-section" id="carousel-div"><div class="carousel-container" id="carousel"></div></div>
-    <div class="movie-grid" id="movie-display"></div>
-    <nav class="bottom-nav">
-        <a href="index.html" class="nav-link active"><i class="fas fa-home"></i><br>Home</a>
-        <a href="admin.html" class="nav-link"><i class="fas fa-user-shield"></i><br>Admin</a>
-    </nav>
+    <div class="admin-box">
+        <h2 id="ftitle">Add Movie</h2>
+        <input type="hidden" id="eid">
+        <input type="text" id="title" placeholder="Title">
+        <input type="text" id="poster" placeholder="Poster Link">
+        <select id="cat"><option value="Action">Action</option><option value="Horror">Horror</option><option value="Comedy">Comedy</option></select>
+        <textarea id="screens" placeholder="Screenshots (Comma separated links)"></textarea>
+        <textarea id="desc" placeholder="Storyline"></textarea>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+            <input type="text" id="l480" placeholder="480p">
+            <input type="text" id="l720" placeholder="720p">
+            <input type="text" id="l1080" placeholder="1080p">
+            <input type="text" id="l4k" placeholder="4K">
+        </div>
+        <button class="btn" id="sbtn" onclick="save()">SAVE DATA</button>
+    </div>
+    <h3>Requests</h3><div id="req-list"></div>
+    <h3>Manage Movies</h3><div id="m-list"></div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script>
         firebase.initializeApp({ apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com" });
-        const db = firebase.database(); let allMovies = [];
+        const db = firebase.database();
+        function save() {
+            const id = document.getElementById('eid').value;
+            const data = { title:document.getElementById('title').value, poster:document.getElementById('poster').value, category:document.getElementById('cat').value, screens:document.getElementById('screens').value, desc:document.getElementById('desc').value, l480:document.getElementById('l480').value, l720:document.getElementById('l720').value, l1080:document.getElementById('l1080').value, l4k:document.getElementById('l4k').value };
+            if(id) db.ref('movies/'+id).update(data).then(()=>location.reload());
+            else db.ref('movies').push(data).then(()=>location.reload());
+        }
         db.ref('movies').on('value', snap => {
-            allMovies = snap.val() ? Object.keys(snap.val()).map(k => ({id:k, ...snap.val()[k]})) : [];
-            displayMovies(allMovies); setupCarousel(allMovies.slice(-5));
+            let h = ""; let count = 0; let dl = 0;
+            Object.keys(snap.val() || {}).reverse().forEach(k => {
+                const m = snap.val()[k]; count++; dl += (m.downloads || 0);
+                h += `<div class="movie-list-item"><img src="${m.poster}"><div><h4>${m.title}</h4></div><div style="margin-left:auto;"><i class="fas fa-edit" onclick="edit('${k}')"></i> <i class="fas fa-trash" onclick="db.ref('movies/${k}').remove()"></i></div></div>`;
+            });
+            document.getElementById('m-list').innerHTML = h; document.getElementById('m-count').innerText = count; document.getElementById('t-dl').innerText = dl;
         });
-        function displayMovies(movies) {
-            document.getElementById('movie-display').innerHTML = movies.slice().reverse().map(m => `
-                <div class="movie-card" onclick="window.location.href='details.html?id=${m.id}'">
-                    <img src="${m.poster}"><span class="movie-title">${m.title}</span>
-                </div>`).join('');
+        db.ref('requests').on('value', snap => {
+            let h = ""; let c = 0; Object.keys(snap.val() || {}).forEach(k => { c++; h += `<div style="padding:10px; border-bottom:1px solid #222;">${snap.val()[k].movie} <i class="fas fa-check" onclick="db.ref('requests/${k}').remove()"></i></div>`; });
+            document.getElementById('req-list').innerHTML = h; document.getElementById('r-count').innerText = c;
+        });
+        function edit(id) {
+            db.ref('movies/'+id).once('value', snap => {
+                const m = snap.val(); document.getElementById('eid').value = id; document.getElementById('title').value = m.title; document.getElementById('poster').value = m.poster; document.getElementById('desc').value = m.desc;
+                document.getElementById('ftitle').innerText = "Edit Movie"; document.getElementById('sbtn').innerText = "UPDATE"; window.scrollTo(0,0);
+            });
         }
-        function filterMovies() {
-            let val = document.getElementById('searchInput').value.toLowerCase();
-            displayMovies(allMovies.filter(m => m.title.toLowerCase().includes(val)));
-            document.getElementById('carousel-div').style.display = val ? "none" : "flex";
-        }
-        function filterCat(cat, btn) {
-            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
-            displayMovies(cat === 'All' ? allMovies : allMovies.filter(m => m.category === cat));
-        }
-        function setupCarousel(top) {
-            document.getElementById('carousel').innerHTML = top.map((m, idx) => `
-                <div class="carousel-item" style="transform: rotateY(${idx * 72}deg) translateZ(250px);" onclick="window.location.href='details.html?id=${m.id}'">
-                    <img src="${m.poster}">
-                </div>`).join('');
-        }
-        let a = 0; setInterval(() => { a -= 72; document.getElementById('carousel').style.transform = `rotateY(${a}deg)`; }, 4000);
     </script>
 </body>
 </html>
