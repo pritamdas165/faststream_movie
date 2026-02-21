@@ -2,73 +2,174 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Pro - Fast8Movie</title>
+    <title>Advanced Admin - Fast8Movie</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        :root { --bg: #0a0a0a; --card: #151515; --accent: #e50914; }
-        body { background: var(--bg); color: white; font-family: 'Poppins', sans-serif; padding: 20px; }
-        .admin-box { max-width: 600px; margin: 0 auto; background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #222; }
-        h2 { text-align: center; color: var(--accent); margin-bottom: 20px; }
+        :root { --bg: #0a0a0a; --card: #151515; --accent: #e50914; --text: #eee; }
+        body { background: var(--bg); color: var(--text); font-family: 'Poppins', sans-serif; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        
+        /* Stats Dashboard */
+        .dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: var(--card); padding: 15px; border-radius: 12px; border: 1px solid #222; text-align: center; }
+        .stat-card i { color: var(--accent); font-size: 1.5rem; margin-bottom: 10px; }
+        .stat-card h3 { font-size: 12px; color: #888; margin: 0; }
+        .stat-card p { font-size: 1.2rem; font-weight: bold; margin: 5px 0 0; }
+
+        /* Form Styling */
+        .admin-box { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #222; margin-bottom: 30px; }
         .input-group { margin-bottom: 12px; }
         label { display: block; font-size: 12px; color: #888; margin-bottom: 5px; }
         input, select, textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #0a0a0a; color: white; outline: none; box-sizing: border-box; }
-        textarea { height: 70px; resize: none; }
+        textarea { height: 60px; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .add-btn { width: 100%; padding: 15px; background: var(--accent); border: none; color: white; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 15px; }
-        .movie-item { display: flex; align-items: center; background: #111; padding: 10px; border-radius: 10px; margin-top: 10px; border: 1px solid #222; }
-        .movie-item img { width: 50px; height: 70px; border-radius: 5px; margin-right: 15px; }
+        
+        .btn-main { width: 100%; padding: 15px; background: var(--accent); border: none; color: white; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        .btn-edit { background: #2196F3; } /* Blue for Update */
+
+        /* Live Movie List */
+        .movie-list-item { display: flex; align-items: center; background: #111; padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #222; }
+        .movie-list-item img { width: 50px; height: 70px; border-radius: 6px; object-fit: cover; margin-right: 15px; }
+        .item-info { flex-grow: 1; }
+        .item-info h4 { font-size: 14px; margin: 0; }
+        .item-info p { font-size: 11px; color: #666; margin-top: 4px; }
+        .item-actions { display: flex; gap: 12px; }
+        .item-actions i { cursor: pointer; transition: 0.3s; }
+        .fa-edit { color: #2196F3; }
+        .fa-trash { color: var(--accent); }
     </style>
 </head>
 <body>
-    <div class="admin-box">
-        <h2><i class="fas fa-user-shield"></i> Advanced Manager</h2>
-        <div class="input-group"><label>Title</label><input type="text" id="title"></div>
-        <div class="input-group"><label>Poster URL</label><input type="text" id="poster"></div>
-        <div class="input-group"><label>Category</label>
-            <select id="category">
-                <option value="Action">Action</option><option value="Horror">Horror</option>
-                <option value="Comedy">Comedy</option><option value="Drama">Drama</option>
-            </select>
-        </div>
-        <div class="input-group"><label>Screenshots (Link1, Link2, Link3)</label><textarea id="screens"></textarea></div>
-        <div class="input-group"><label>Storyline</label><textarea id="desc"></textarea></div>
-        <div class="grid">
-            <input type="text" id="l480" placeholder="480p Link">
-            <input type="text" id="l720" placeholder="720p Link">
-            <input type="text" id="l1080" placeholder="1080p Link">
-            <input type="text" id="l4k" placeholder="4K Link">
-        </div>
-        <button class="add-btn" onclick="addMovie()">ADD MOVIE</button>
-    </div>
-    <div id="list" style="max-width:600px; margin: 30px auto;"></div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script>
-        firebase.initializeApp({ apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com" });
-        const db = firebase.database();
-        function addMovie() {
-            const data = {
-                title: document.getElementById('title').value,
-                poster: document.getElementById('poster').value,
-                category: document.getElementById('category').value,
-                screens: document.getElementById('screens').value,
-                desc: document.getElementById('desc').value,
-                l480: document.getElementById('l480').value,
-                l720: document.getElementById('l720').value,
-                l1080: document.getElementById('l1080').value,
-                l4k: document.getElementById('l4k').value
-            };
-            db.ref('movies').push(data).then(() => { alert("Success!"); location.reload(); });
-        }
-        db.ref('movies').on('value', snap => {
-            let h = "";
-            Object.keys(snap.val() || {}).reverse().forEach(k => {
-                const m = snap.val()[k];
-                h += `<div class="movie-item"><img src="${m.poster}"><div><h4>${m.title}</h4><p>${m.category}</p></div><i class="fas fa-trash" style="margin-left:auto; cursor:pointer;" onclick="db.ref('movies/${k}').remove()"></i></div>`;
+<div class="container">
+    <div class="dashboard">
+        <div class="stat-card"><i class="fas fa-film"></i><h3>Movies</h3><p id="count">0</p></div>
+        <div class="stat-card"><i class="fas fa-eye"></i><h3>Live</h3><p>Active</p></div>
+        <div class="stat-card"><i class="fas fa-database"></i><h3>DB</h3><p>Firebase</p></div>
+    </div>
+
+    <div class="admin-box" id="form-container">
+        <h2 id="form-title"><i class="fas fa-plus-circle"></i> Add New Movie</h2>
+        <input type="hidden" id="edit-id"> <div class="input-group"><label>Movie Title</label><input type="text" id="title"></div>
+        <div class="input-group"><label>Poster URL</label><input type="text" id="poster"></div>
+        <div class="input-group"><label>Screenshots (Comma separated)</label><textarea id="screens"></textarea></div>
+        <div class="input-group"><label>Storyline</label><textarea id="desc"></textarea></div>
+        
+        <div class="grid">
+            <div class="input-group"><label>480p Link</label><input type="text" id="l480"></div>
+            <div class="input-group"><label>720p Link</label><input type="text" id="l720"></div>
+            <div class="input-group"><label>1080p Link</label><input type="text" id="l1080"></div>
+            <div class="input-group"><label>4K Link</label><input type="text" id="l4k"></div>
+        </div>
+
+        <button class="btn-main" id="submit-btn" onclick="saveMovie()">SAVE MOVIE DATA</button>
+        <button class="btn-main btn-edit" id="cancel-btn" style="display:none; margin-top:5px; background:#444;" onclick="resetForm()">CANCEL EDIT</button>
+    </div>
+
+    <h3><i class="fas fa-list"></i> Managed Movies</h3>
+    <div id="movie-list"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script>
+    firebase.initializeApp({ apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com" });
+    const db = firebase.database();
+
+    // Add or Update Movie
+    function saveMovie() {
+        const id = document.getElementById('edit-id').value;
+        const data = {
+            title: document.getElementById('title').value,
+            poster: document.getElementById('poster').value,
+            screens: document.getElementById('screens').value,
+            desc: document.getElementById('desc').value,
+            l480: document.getElementById('l480').value,
+            l720: document.getElementById('l720').value,
+            l1080: document.getElementById('l1080').value,
+            l4k: document.getElementById('l4k').value
+        };
+
+        if(!data.title || !data.poster) return alert("Title and Poster are required!");
+
+        if(id) {
+            // Update existing
+            db.ref('movies/' + id).update(data).then(() => {
+                alert("Movie Updated!");
+                resetForm();
             });
-            document.getElementById('list').innerHTML = h;
+        } else {
+            // Add new
+            db.ref('movies').push(data).then(() => {
+                alert("Movie Added!");
+                resetForm();
+            });
+        }
+    }
+
+    // Load Movies for List
+    db.ref('movies').on('value', snap => {
+        const movies = snap.val();
+        let html = "";
+        let count = 0;
+        if(movies) {
+            Object.keys(movies).reverse().forEach(key => {
+                count++;
+                const m = movies[key];
+                html += `
+                <div class="movie-list-item">
+                    <img src="${m.poster}">
+                    <div class="item-info">
+                        <h4>${m.title}</h4>
+                        <p>${m.l480 ? '480p ' : ''}${m.l720 ? '720p ' : ''}${m.l1080 ? '1080p ' : ''}${m.l4k ? '4K' : ''}</p>
+                    </div>
+                    <div class="item-actions">
+                        <i class="fas fa-edit" onclick="editMovie('${key}')"></i>
+                        <i class="fas fa-trash" onclick="deleteMovie('${key}')"></i>
+                    </div>
+                </div>`;
+            });
+        }
+        document.getElementById('movie-list').innerHTML = html;
+        document.getElementById('count').innerText = count;
+    });
+
+    // Edit Function
+    function editMovie(id) {
+        db.ref('movies/' + id).once('value', snap => {
+            const m = snap.val();
+            document.getElementById('edit-id').value = id;
+            document.getElementById('title').value = m.title;
+            document.getElementById('poster').value = m.poster;
+            document.getElementById('screens').value = m.screens || "";
+            document.getElementById('desc').value = m.desc || "";
+            document.getElementById('l480').value = m.l480 || "";
+            document.getElementById('l720').value = m.l720 || "";
+            document.getElementById('l1080').value = m.l1080 || "";
+            document.getElementById('l4k').value = m.l4k || "";
+
+            // UI Changes
+            document.getElementById('form-title').innerHTML = `<i class="fas fa-edit"></i> Editing: ${m.title}`;
+            document.getElementById('submit-btn').innerText = "UPDATE MOVIE";
+            document.getElementById('submit-btn').classList.add('btn-edit');
+            document.getElementById('cancel-btn').style.display = "block";
+            window.scrollTo(0, 0);
         });
-    </script>
+    }
+
+    function deleteMovie(id) {
+        if(confirm("Delete this movie forever?")) db.ref('movies/' + id).remove();
+    }
+
+    function resetForm() {
+        document.getElementById('edit-id').value = "";
+        document.querySelectorAll('input, textarea').forEach(i => i.value = "");
+        document.getElementById('form-title').innerHTML = `<i class="fas fa-plus-circle"></i> Add New Movie`;
+        document.getElementById('submit-btn').innerText = "SAVE MOVIE DATA";
+        document.getElementById('submit-btn').classList.remove('btn-edit');
+        document.getElementById('cancel-btn').style.display = "none";
+    }
+</script>
+
 </body>
 </html>
