@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://quge5.com/88/tag.min.js" data-zone="212786" async data-cfasync="false"></script>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Details</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { background: #050505; color: white; font-family: sans-serif; margin: 0; }
+        .hero { height: 50vh; background-size: cover; background-position: center; filter: blur(10px) brightness(0.3); position: fixed; width: 100%; z-index: -1; }
+        .content { padding: 40px 20px; text-align: center; }
+        .poster { width: 200px; border-radius: 15px; border: 3px solid #e50914; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        h1 { margin: 20px 0; font-size: 1.8rem; }
+        .desc { background: #111; padding: 20px; border-radius: 15px; border: 1px solid #222; margin-bottom: 30px; }
+        .btn { display: block; background: linear-gradient(45deg, #e50914, #ff3d47); color: white; padding: 18px; border-radius: 12px; text-decoration: none; font-weight: bold; font-size: 1.2rem; }
+    </style>
+</head>
+<body>
+    <div id="hero" class="hero"></div>
+    <div class="content">
+        <img id="poster" class="poster" src="">
+        <h1 id="title">Loading...</h1>
+        <div class="desc"><h3>Storyline</h3><p>Watch this high-quality movie on Fast8Movie. Click below to start the secure download process.</p></div>
+        <a id="dl-link" href="#" class="btn"><i class="fas fa-download"></i> DOWNLOAD NOW</a>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script>
+        const id = new URLSearchParams(window.location.search).get('id');
+        firebase.initializeApp({ apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com" });
+        firebase.database().ref('movies/' + id).once('value', snap => {
+            const m = snap.val();
+            document.getElementById('poster').src = m.poster;
+            document.getElementById('hero').style.backgroundImage = `url(${m.poster})`;
+            document.getElementById('title').innerText = m.title;
+            document.getElementById('dl-link').href = "go.html?id=" + id;
+        });
+    </script>
+</body>
+</html>
