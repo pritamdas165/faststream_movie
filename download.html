@@ -3,26 +3,30 @@
 <head>
     <script src="https://quge5.com/88/tag.min.js" data-zone="212786" async data-cfasync="false"></script>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Step 3</title>
+    <title>Download</title>
     <style>
-        body { background: #050505; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; text-align: center; }
-        .timer { font-size: 5rem; color: #e50914; font-weight: 800; }
-        .btn { display: none; background: #e50914; color: white; padding: 18px; border-radius: 12px; text-decoration: none; font-weight: bold; font-size: 1.2rem; width: 300px; }
+        body { background: #050505; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .btn { display: none; background: #e50914; color: white; padding: 18px; border-radius: 12px; text-decoration: none; font-weight: bold; width: 250px; text-align: center; }
+        .timer { font-size: 5rem; font-weight: 800; color: #e50914; }
     </style>
 </head>
 <body>
-    <div><div class="timer" id="t">10</div><button id="btn" class="btn">START DOWNLOAD NOW</button></div>
+    <div style="text-align: center;"><div class="timer" id="t">10</div><a id="btn" href="#" class="btn">DOWNLOAD NOW</a></div>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script>
-        const urlP = new URLSearchParams(window.location.search);
-        const qLink = atob(urlP.get('q'));
-        let s = 10;
-        const count = setInterval(() => {
+        const u = new URLSearchParams(window.location.search);
+        firebase.initializeApp({ apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com" });
+        let s = 10; const count = setInterval(() => {
             s--; document.getElementById('t').innerText = s;
             if(s<=0) {
                 clearInterval(count); document.getElementById('t').style.display = "none";
                 const b = document.getElementById('btn'); b.style.display = "block";
-                b.onclick = () => { window.open("https://omg10.com/4/10626413", "_blank"); 
-                setTimeout(() => { window.location.href = qLink; }, 500); };
+                b.onclick = () => {
+                    firebase.database().ref('movies/'+u.get('id')+'/downloads').transaction(c => (c||0)+1);
+                    window.open("https://omg10.com/4/10626413", "_blank");
+                    setTimeout(() => { window.location.href = atob(u.get('q')); }, 500);
+                };
             }
         }, 1000);
     </script>
