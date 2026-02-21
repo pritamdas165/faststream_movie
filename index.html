@@ -3,33 +3,75 @@
 <head>
     <script src="https://quge5.com/88/tag.min.js" data-zone="212786" async data-cfasync="false"></script>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fast8Movie - Home</title>
+    <title>Fast8Movie - Premium Streaming</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        :root { --bg: #050505; --accent: #e50914; }
-        body { background: var(--bg); color: white; font-family: 'Poppins', sans-serif; margin: 0; padding-bottom: 80px; }
-        header { padding: 15px; background: rgba(0,0,0,0.9); display: flex; justify-content: space-between; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #222; }
+        :root { --bg: #050505; --accent: #e50914; --card: #111; }
+        body { background: var(--bg); color: white; font-family: 'Poppins', sans-serif; margin: 0; padding-bottom: 80px; overflow-x: hidden; }
+        
+        /* Premium Header with Search */
+        header { padding: 15px; background: rgba(0,0,0,0.9); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #222; }
+        .nav-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .logo { color: var(--accent); font-size: 1.5rem; font-weight: 900; text-decoration: none; }
-        .carousel-section { height: 350px; perspective: 1200px; display: flex; justify-content: center; align-items: center; overflow: hidden; background: radial-gradient(circle, #1a1a1a, #050505); }
-        .carousel-container { position: relative; width: 150px; height: 220px; transform-style: preserve-3d; transition: transform 1s; }
+        
+        .search-box { position: relative; width: 100%; }
+        .search-box input { width: 100%; background: #1a1a1a; border: 1px solid #333; padding: 12px 40px; border-radius: 10px; color: white; outline: none; transition: 0.3s; }
+        .search-box input:focus { border-color: var(--accent); box-shadow: 0 0 10px rgba(229, 9, 20, 0.2); }
+        .search-box i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #666; }
+
+        /* Category Filter */
+        .categories { display: flex; gap: 10px; overflow-x: auto; padding: 15px; scrollbar-width: none; }
+        .categories::-webkit-scrollbar { display: none; }
+        .cat-btn { background: #1a1a1a; border: 1px solid #333; padding: 8px 20px; border-radius: 20px; white-space: nowrap; cursor: pointer; font-size: 13px; transition: 0.3s; }
+        .cat-btn.active { background: var(--accent); border-color: var(--accent); }
+
+        /* 3D Carousel */
+        .carousel-section { height: 300px; perspective: 1200px; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, #1a1a1a, #050505); margin-bottom: 20px; }
+        .carousel-container { position: relative; width: 140px; height: 200px; transform-style: preserve-3d; transition: transform 1s; }
         .carousel-item { position: absolute; width: 100%; height: 100%; border-radius: 12px; overflow: hidden; border: 1px solid #333; cursor: pointer; }
         .carousel-item img { width: 100%; height: 100%; object-fit: cover; }
-        .movie-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px; }
-        .movie-card { background: #111; border-radius: 10px; overflow: hidden; border: 1px solid #222; cursor: pointer; position: relative; }
+
+        /* Movie Grid */
+        .movie-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 15px; }
+        .movie-card { background: var(--card); border-radius: 10px; overflow: hidden; border: 1px solid #222; cursor: pointer; }
         .movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
-        .movie-title { padding: 5px; font-size: 10px; text-align: center; display: block; white-space: nowrap; overflow: hidden; }
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 60px; background: #000; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #222; }
+        .movie-title { padding: 5px; font-size: 10px; text-align: center; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 60px; background: #000; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #222; z-index: 1000; }
         .nav-link { color: #666; text-decoration: none; font-size: 11px; text-align: center; }
-        .active { color: var(--accent); }
+        .nav-link.active { color: var(--accent); }
     </style>
 </head>
 <body>
-    <header><a href="index.html" class="logo">FAST8MOVIE</a></header>
-    <div class="carousel-section"><div class="carousel-container" id="carousel"></div></div>
+
+    <header>
+        <div class="nav-top">
+            <a href="index.html" class="logo">FAST8MOVIE</a>
+            <i class="fas fa-user-circle" style="font-size: 1.5rem; color: #888;"></i>
+        </div>
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Search movies..." onkeyup="filterMovies()">
+        </div>
+    </header>
+
+    <div class="categories" id="cat-container">
+        <div class="cat-btn active" onclick="filterCat('All', this)">All</div>
+        <div class="cat-btn" onclick="filterCat('Action', this)">Action</div>
+        <div class="cat-btn" onclick="filterCat('Horror', this)">Horror</div>
+        <div class="cat-btn" onclick="filterCat('Comedy', this)">Comedy</div>
+        <div class="cat-btn" onclick="filterCat('Drama', this)">Drama</div>
+    </div>
+
+    <div class="carousel-section" id="carousel-div">
+        <div class="carousel-container" id="carousel"></div>
+    </div>
+
     <div class="movie-grid" id="movie-display"></div>
+
     <nav class="bottom-nav">
         <a href="index.html" class="nav-link active"><i class="fas fa-home"></i><br>Home</a>
-        <a href="admin.html" class="nav-link"><i class="fas fa-user-shield"></i><br>Admin</a>
+        <a href="admin.html" class="nav-link"><i class="fas fa-plus-circle"></i><br>Add Movie</a>
     </nav>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -37,17 +79,45 @@
     <script>
         firebase.initializeApp({ apiKey: "AIzaSyDosgWhpc2fkwlyKKP73arZyfaETDUGzY4", databaseURL: "https://movie-project-b78b4-default-rtdb.firebaseio.com" });
         const db = firebase.database();
+        let allMovies = [];
+
         db.ref('movies').on('value', snap => {
-            const movies = snap.val() ? Object.keys(snap.val()).map(k => ({id:k, ...snap.val()[k]})) : [];
+            allMovies = snap.val() ? Object.keys(snap.val()).map(k => ({id:k, ...snap.val()[k]})) : [];
+            displayMovies(allMovies);
+            setupCarousel(allMovies.slice(-5));
+        });
+
+        function displayMovies(movies) {
             document.getElementById('movie-display').innerHTML = movies.slice().reverse().map(m => `
                 <div class="movie-card" onclick="window.location.href='details.html?id=${m.id}'">
                     <img src="${m.poster}"><span class="movie-title">${m.title}</span>
                 </div>`).join('');
-            document.getElementById('carousel').innerHTML = movies.slice(-5).map((m, idx) => `
+        }
+
+        function filterMovies() {
+            let val = document.getElementById('searchInput').value.toLowerCase();
+            let filtered = allMovies.filter(m => m.title.toLowerCase().includes(val));
+            displayMovies(filtered);
+            document.getElementById('carousel-div').style.display = val ? "none" : "flex"; // Search korle carousel bondho hobe
+        }
+
+        function filterCat(cat, btn) {
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            if(cat === 'All') { displayMovies(allMovies); } 
+            else {
+                let filtered = allMovies.filter(m => m.category === cat);
+                displayMovies(filtered);
+            }
+        }
+
+        function setupCarousel(topMovies) {
+            document.getElementById('carousel').innerHTML = topMovies.map((m, idx) => `
                 <div class="carousel-item" style="transform: rotateY(${idx * 72}deg) translateZ(250px);" onclick="window.location.href='details.html?id=${m.id}'">
                     <img src="${m.poster}">
                 </div>`).join('');
-        });
+        }
+
         let a = 0; setInterval(() => { a -= 72; document.getElementById('carousel').style.transform = `rotateY(${a}deg)`; }, 4000);
     </script>
 </body>
