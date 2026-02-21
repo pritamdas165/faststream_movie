@@ -19,13 +19,14 @@
         <a id="next" href="#" class="btn">CONTINUE TO STEP 2</a>
     </div>
     <script>
-        const id = new URLSearchParams(window.location.search).get('id');
+        const urlP = new URLSearchParams(window.location.search);
+        const id = urlP.get('id'); const q = urlP.get('q');
         document.getElementById('adBtn').onclick = function() {
             window.open("https://omg10.com/4/10626413", "_blank");
             this.style.display = "none";
             const next = document.getElementById('next');
             next.style.display = "block";
-            next.href = "verify.html?id=" + id;
+            next.href = `verify.html?id=${id}&q=${q}`;
         };
     </script>
 </body>
